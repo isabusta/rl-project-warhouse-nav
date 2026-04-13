@@ -1,0 +1,188 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Optimal Path for Package distribution}
+\author{Romano Brentani}
+
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Domain}
+
+\section{Methodology}
+
+\section{Experiment Design}
+
+\subsection{Objective}
+
+The objective of the experiments is to evaluate whether reinforcement learning methods enable a warehouse robot to efficiently distribute and store incoming packages in a constrained environment. The agent must optimize navigation and task sequencing while operating in the presence of obstacles and environmental uncertainty.
+
+Four reinforcement Learning approaches will be compared:
+
+\begin{itemize}
+    \item Q-Learning,
+    \item SARSA,
+    \item Value Iteration,
+    \item Policy Iteration.
+\end{itemize}
+
+The experiments aim to answer the following research questions:
+
+\begin{enumerate}
+    \item Does reinforcement learning improve warehouse efficiency compared to heuristic solutions?
+    \item Which algorithm achieves the best performance under varying environmental conditions?
+    \item How robust are learned policies across different warehouse configurations?
+\end{enumerate}
+
+\subsection{Environment Setup}
+
+The warehouse is modeled as a discrete grid-environment representing storage locations, free navigation space, and obstacles.
+
+In each experiment-setup the robot receives $N$ packages that must be transported to designated storage positions. The number $N$ can be configures individual by the user. 
+
+The environment state is defined as:
+\begin{itemize}
+    \item robot position,
+    \item remaining packages,
+    \item storage occupancy,
+    \item obstacle configuration.
+\end{itemize}
+
+The agent can execute the following actions:
+
+\begin{itemize}
+    \item movement actions (up, down, left, right),
+    \item package pickup,
+    \item package storage.
+\end{itemize}
+
+Obstacles can be static or dynamically added during execution to simulate realistic warehouse disruptions such as blocked paths or fallen shelves.
+
+\subsection{Reward Design}
+
+The reward function is designed to encourage efficient task completion:
+
+\begin{equation}
+R = -c_{m} - c_{t} + r_{s}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $c_{m}$ represents unnecessary movement,
+    \item $c_{t}$ penalizes longer completion times,
+    \item $r_{s}$ rewards the successful package storage.
+    \item $c_{col}$ is the punishment for collide with a obstacle
+\end{itemize}
+
+A successful learning method should minimize total completion time, penalty factors and maximize the cumulative reward.
+
+\subsection{Baseline Methods}
+
+To assess whether reinforcement learning provides measurable benefits, we compare against established non-learning baselines:
+
+\begin{itemize}
+    \item \textbf{Shortest-path heuristic:} path planning using deterministic search (e.g., A* or Dijkstra’s Algorithm) combined with fixed package ordering,
+    \item \textbf{Greedy strategy:} always storing the nearest available package,
+    \item \textbf{Random policy:} lower-bound performance reference.
+\end{itemize}
+
+These baselines are commonly used rule-based warehouse strategies.
+
+\subsection{Compared Algorithms}
+
+\paragraph{Q-Learning}
+Q-Learning is a simulation-based value iteration algorithm. This algorithm uses a trivial empirical MDP model. That means the true MDP model is replaced by an estimate MDP model. 
+Q-Learning is a temporal-difference method that tries to learns optimal action-values independent of the policy behavior. It is expected to achieve strong performance in stationary environments.
+
+\paragraph{SARSA}
+An on-policy temporal-difference algorithm that updates value estimates using the executed policy. Due to its conservative updates, it is expected to perform robustly in stochastic environments.
+
+\paragraph{Value Iteration}
+Value iteration is a simple extension of
+the backwards induction algorithm to the infinite horizon case. 
+Mathematically, Value iteration corresponds to repeated application of the Bellman operator. 
+
+\paragraph{Policy Iteration}
+policy iteration attempts to iteratively improve a given
+policy, rather than a value function. Starting with an arbitrary policy, at each
+iteration it first computes the value of the current policy. In a second step called policy improvement the policy is updated by choosing the policy that is greedy with respect to the value function computed in the evaluation step.
+
+\subsection{Evaluation Metrics}
+
+Performance is evaluated using the following metrics:
+
+\textbf{Efficiency Metrics}
+
+\begin{itemize}
+    \item total task completion time,
+    \item total travel distance,
+    \item number of executed actions,
+    \item energy consumption proxy.
+\end{itemize}
+
+\textbf{Learning Metrics}
+\begin{itemize}
+    \item cumulative reward per episode,
+    \item convergence speed,
+    \item policy stability after convergence.
+\end{itemize}
+
+\textbf{Operational Metrics}
+\begin{itemize}
+    \item collision rate,
+    \item failed storage attempts,
+    \item average decision latency.
+\end{itemize}
+
+An overall efficiency score is defined as:
+
+\begin{equation}
+E= \frac{{Packages Stored}}{{TimeSteps}}
+\end{equation}
+
+\subsection{Experimental Procedure}
+
+Each algorithm is trained over multiple episodes until convergence.
+
+The evaluation procedure consists of:
+
+\begin{enumerate}
+    \item training policies in a fixed warehouse configuration,
+    \item testing on unseen environment layouts,
+    \item repeating experiments across multiple random seeds,
+    \item reporting averaged performance statistics.
+\end{enumerate}
+
+Training and evaluation environments are separated to measure generalization capability.
+
+\subsection{Expected Contexts of Improvement}
+
+Reinforcement learning approaches are expected to outperform heuristic baselines in scenarios where:
+
+\begin{itemize}
+    \item obstacle layouts create complex navigation constraints,
+    \item package ordering significantly affects efficiency,
+    \item environmental conditions change dynamically,
+    \item global optimization is required beyond local greedy decisions.
+\end{itemize}
+
+\subsection{Robustness Evaluation}
+
+Robustness is evaluated by systematically varying the problem instance:
+
+\begin{itemize}
+    \item different numbers of packages $N$,
+    \item varying warehouse sizes,
+    \item randomized obstacle placements,
+    \item dynamically appearing obstacles,
+    \item stochastic action outcomes.
+\end{itemize}
+
+Robustness is measured through performance variance and degradation under increasing task complexity.
+
+\end{document}
