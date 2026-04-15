@@ -44,7 +44,7 @@ The experiments aim to answer the following research questions:
 
 The warehouse is modeled as a discrete grid-environment representing storage locations, free navigation space, and obstacles.
 
-In each experiment-setup, the robot receives $N$ packages that must be delivered to designated storage positions. The number $N$ can be configures individual by the user. 
+In each experiment-setup, the robot receives $N$ packages that must be delivered to designated storage positions. The number $N$ can be configured individual by the user. 
 
 The environment state is defined as:
 \begin{itemize}
@@ -57,16 +57,17 @@ The environment state is defined as:
 The agent can execute the following actions:
 
 \begin{itemize}
-    \item movement actions (up, down, left, right),
-    \item package pickup,
-    \item package storage.
+    \movement actions (up, down, left, right),
+    \package pickup,
+    \package storage.
 \end{itemize}
 
 Obstacles can be static or dynamically added during execution to simulate realistic warehouse disruptions such as blocked paths or fallen shelves.
 
 \subsection{Reward Design}
 
-The reward function is designed to encourage efficient task completion:
+The goal is to complete the task described above efficient.
+In order to achieve that a reward function is defined. The reward function is designed to encourage efficient task completion:
 
 \begin{equation}
 R = -c_{m} - c_{t} + r_{s}
@@ -80,7 +81,7 @@ where:
     \item $c_{col}$ is the punishment for collide with a obstacle
 \end{itemize}
 
-A successful learning method should minimize total completion time, penalty factors and maximize the cumulative reward.
+A successful learning method aims to minimize the total completion time, penalty factors and tries to maximize the cumulative reward.
 
 \subsection{Baseline Methods}
 
