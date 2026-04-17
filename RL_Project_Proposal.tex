@@ -13,7 +13,8 @@
 \section{Introduction}
 
 \section{Domain}
-We consider a warehouse where a robot must pick up packages and deliver them to different locations while navigating around obstacles. The warehouse is represented as a grid and the problem is to figure out which package to deliver first and how to navigate efficiently across all deliveries. We model this as a Markov Decision Process (MDP), where the agent learns through trial and error to find the best delivery strategy.
+We consider a warehouse where a robot must pick up $N$ packages and deliver them to different locations while navigating around obstacles. The warehouse is represented as a grid and the problem is to figure out in which order the packages should be processed and stored. 
+Each package must be stored in one storage and the Agent can store one package at the time. The goal of the Agent is to determine how to navigate efficiently across all deliveries without running into a obstacle. We model this problem as a Markov Decision Process (MDP), where the agent learns through trial and error to find the best delivery strategy.
 
 \section{Methodology}
 
