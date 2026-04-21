@@ -133,4 +133,4 @@ grid_out = [
     [categories[st.session_state.cell_status[r][c]]["name"] for c in range(cols)]
     for r in range(rows)
 ]
-st.dataframe(grid_out, hide_index=True, use_container_width=True)
+st.dataframe(grid_out, hide_index=True, width='stretch')
