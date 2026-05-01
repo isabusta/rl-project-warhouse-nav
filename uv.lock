@@ -427,12 +427,14 @@ name = "rl-project-warhouse-nav"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "numpy" },
     { name = "st-selectable-grid" },
     { name = "streamlit" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "numpy", specifier = ">=2.4.4" },
     { name = "st-selectable-grid", specifier = ">=1.0.0" },
     { name = "streamlit", specifier = ">=1.56.0" },
 ]
