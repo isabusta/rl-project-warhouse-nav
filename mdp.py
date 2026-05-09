@@ -27,7 +27,6 @@ class WarehouseMDP:
     Warehouse grid-world MDP.
 
 
-
     State: (robot_pos, carrying, delivered)
       robot_pos  : (row, col)
       carrying   : None or package id (int)
