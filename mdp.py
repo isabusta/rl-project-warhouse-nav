@@ -172,6 +172,18 @@ class WarehouseMDP:
                     P[i, a, self.state_index[s_next]] += prob
         return P, R
 
+    def add_obstacle(self, x, y):
+        if self.start_pos == (x, y):
+            return
+
+        for i in self.packages.keys():
+            (px, py) = self.packages[i]
+            (sx, sy) = self.states[i]
+            if (x, y ) == (px, py) or (x, y) == (sx, sy):
+                return
+
+        self.grid[x][y] = 1
+
 
 # demo
 if __name__ == '__main__':
