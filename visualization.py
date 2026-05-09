@@ -15,7 +15,7 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
     state = start_state
     total = 0
 
-    for step in range(20):
+    for step in range(30):
         s = mdp.state_index[state]
         a = policy[s]
         state, reward, done = mdp.step(state, a)
@@ -32,13 +32,10 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
         ax.clear()
         current_state = path_states[frame_idx]
         (row, col), carrying, delivered = current_state
-        print(carrying)
 
-        # Grid zeichnen (0=weiß, 1=grau/schwarz für Hindernisse)
         ax.imshow(mdp.grid, cmap='gray', origin='upper', interpolation='nearest')
         ax.set_aspect('equal')
 
-        # Gitterlinien zur besseren Orientierung
         ax.set_xticks(np.arange(-0.5, mdp.ncols, 1), minor=True)
         ax.set_yticks(np.arange(-0.5, mdp.nrows, 1), minor=True)
         ax.grid(which='minor', color='black', linestyle='-', linewidth=0.5)
@@ -69,7 +66,7 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
         ax.set_ylim(mdp.nrows - 0.5, -0.5)
 
         if frame_idx == len(path_states) - 1:
-            plt.pause(0.5)  # optional kurze Anzeige
+            plt.pause(0.5)
             plt.close(fig)
 
     # Animation erstellen
@@ -81,4 +78,30 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
     plt.close(fig)
 
     return total
+
+def visualize_learning(mdp: WarehouseMDP, policies) -> None:
+    rewards = {}
+    for episode, policy in policies.items():
+        print(f"\n--- Episode following policy ---")
+        print("-" * 25)
+        start_state = mdp.reset()
+        rewards[episode] = animate_agent(mdp, policy, start_state)
+
+
+# plot a line how the reward changes over the episodes
+def plot_rewards(algorithm: str, policies):
+    episodes = len(policies)
+    pass
+
+# Todo plot the number steps until goal is achieved
+def plot_steps(algorithm: str, policies):
+    pass
+
+
+def plot_policy_changes():
+    pass
+
+def plot_success_rate():
+    pass
+
 

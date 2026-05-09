@@ -102,10 +102,9 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
 
 
 def q_learning(mdp: WarehouseMDP,
-               n_episodes=1000,
-               max_steps=500,
+               n_episodes=100,
+               max_steps=100,
                alpha=0.1,
-               gamma=0.99,
                epsilon=1.0,
                epsilon_decay=0.995,
                min_epsilon=0.01):
