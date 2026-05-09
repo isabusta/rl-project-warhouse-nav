@@ -44,20 +44,16 @@ def value_iteration(mdp, theta=1e-4, max_iter=1000):
 
     for it in range(1, max_iter + 1):
         Q     = mdp.R + mdp.gamma * (mdp.P @ V)   # (n_states, n_actions)
-
         V_new = Q.max(axis=1)
-
         delta = np.max(np.abs(V_new - V))
-
         V     = V_new
-
-        policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
-
         if delta < theta:
             print(f"Value iteration converged in {it} iterations  (Δ={delta:.2e})")
             break
 
+    policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
     return V, policy
+
 
 
 def policy_evaluation(mdp, policy, theta=1e-4, max_iter=1000):
@@ -101,13 +97,11 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
 def q_learning(
         mdp,
         n_episodes=5000,
-        alpha=0.1,  # Lernrate
-        epsilon=1.0,  # Exploration-Rate
+        alpha=0.1,
+        epsilon=1.0,
         epsilon_decay=0.995,
         min_epsilon=0.01
 ):
-    # Initialisierung der Q-Tabelle mit Nullen
-    # Größe: [Anzahl Zustände x Anzahl Aktionen]
     Q = np.zeros((mdp.n_states, mdp.n_actions))
 
     rewards_per_episode = []
