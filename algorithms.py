@@ -1,6 +1,8 @@
 import numpy as np
 from numpy import random
 
+from mdp import WarehouseMDP
+
 
 def backwards_induction(mdp, T):
     """
@@ -28,6 +30,11 @@ def backwards_induction(mdp, T):
 
     return V, policy
 
+
+# Todo SARS
+def SARS(mdp):
+
+    pass
 
 def value_iteration(mdp, theta=1e-4, max_iter=1000):
     """
@@ -94,25 +101,30 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
     return V, policy
 
 
-def q_learning(
-        mdp,
-        n_episodes=5000,
-        alpha=0.1,
-        epsilon=1.0,
-        epsilon_decay=0.995,
-        min_epsilon=0.01
-):
-    Q = np.zeros((mdp.n_states, mdp.n_actions))
+def q_learning(mdp: WarehouseMDP,
+               n_episodes=1000,
+               max_steps=500,
+               alpha=0.1,
+               gamma=0.99,
+               epsilon=1.0,
+               epsilon_decay=0.995,
+               min_epsilon=0.01):
+
+    Q = np.zeros((mdp.n_states,
+                  mdp.n_actions))
 
     rewards_per_episode = []
+    policies = {}
 
     for episode in range(n_episodes):
+
         state = mdp.reset()
         state_idx = mdp.state_index[state]
         total_reward = 0
-        done = False
 
-        while not done:
+        for step in range(max_steps):
+
+            # epsilon greedy
             if random.random() < epsilon:
                 action = random.randint(0, mdp.n_actions - 1)
             else:
@@ -121,19 +133,26 @@ def q_learning(
             next_state, reward, done = mdp.step(state, action)
             next_state_idx = mdp.state_index[next_state]
 
-            best_next_action = np.argmax(Q[next_state_idx])
-            td_target = reward + mdp.gamma * Q[next_state_idx, best_next_action]
-            td_error = td_target - Q[state_idx, action]
-            Q[state_idx, action] += alpha * td_error
+            # Q update
+            if done:
+                td_target = reward
+            else:
+                best_next = np.argmax(Q[next_state_idx])
+                td_target = reward + mdp.gamma * Q[next_state_idx, best_next]
+
+            Q[state_idx, action] += alpha * (td_target - Q[state_idx, action])
 
             state = next_state
             state_idx = next_state_idx
             total_reward += reward
 
+            if done:
+                break
+
+        policies[episode] = np.argmax(Q, axis=1)
+
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
 
-        if (episode + 1) % 500 == 0:
-            print(f"Episode {episode + 1}: Total Reward = {total_reward:.2f}, Epsilon = {epsilon:.3f}")
+    return Q, rewards_per_episode, policies
 
-    return Q, rewards_per_episode

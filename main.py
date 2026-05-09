@@ -1,6 +1,19 @@
+import time
+
 import numpy as np
 from mdp import WarehouseMDP, ACTION_NAMES
-from algorithms import backwards_induction, value_iteration, policy_iteration
+from algorithms import backwards_induction, value_iteration, policy_iteration, q_learning
+from visualization import animate_agent
+
+
+def visualize_learning(mdp: WarehouseMDP, policies) -> None:
+    rewards = {}
+    for episode, policy in policies.items():
+        print(f"\n--- Episode following policy ---")
+        print("-" * 25)
+        start_state = mdp.reset()
+        rewards[episode] = animate_agent(mdp, policy, start_state)
+
 
 # ── Warehouse setup
 mdp = WarehouseMDP(
@@ -8,7 +21,7 @@ mdp = WarehouseMDP(
         [0, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [0, 1, 0, 0],
     ],
     start_pos=(0, 0),
     packages={0: (0, 1), 1: (3, 3)},
@@ -46,6 +59,17 @@ V_pi, policy_pi = policy_iteration(mdp)
 print(f"V[start]      = {V_pi[s0]:.2f}")
 print(f"Best action at start: {ACTION_NAMES[policy_pi[s0]]}")
 
+
+
+# Q-Learning
+print(f"\n--- Q-Learning Iteration ---")
+Q, reward, policies = q_learning(mdp)
+policy_ql = np.argmax(Q, axis=1)
+print(f"Best action at start: {ACTION_NAMES[policy_ql[s0]]}")
+
+start_state = mdp.reset()
+visualize_learning(mdp, policies)
+
 #  Compare
 print(f"\n--- Comparison ---")
 print(f"VI vs PI max|V diff| : {np.max(np.abs(V_vi - V_pi)):.6f}")
@@ -59,7 +83,7 @@ print(f'{"Step":<5} {"Action":<10} {"Reward":>7}')
 print("-" * 25)
 for step in range(50):
     s    = mdp.state_index[state]
-    a    = policy_vi[s]
+    a    = policy_ql[s]
     state, reward, done = mdp.step(state, a)
     total += reward
     print(f"{step+1:<5} {ACTION_NAMES[a]:<10} {reward:>+7.0f}")
