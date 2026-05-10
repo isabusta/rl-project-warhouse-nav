@@ -26,21 +26,26 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
             break
 
     # 2. Plot Setup
-    fig, ax = plt.subplots(figsize=(mdp.nrows, mdp.ncols))
+    fig, ax = plt.subplots(figsize=(mdp.nrows + 2, mdp.ncols + 2))
 
     def update(frame_idx):
         ax.clear()
         current_state = path_states[frame_idx]
         (row, col), carrying, delivered = current_state
 
-        ax.imshow(mdp.grid, cmap='gray', origin='upper', interpolation='nearest')
+        #ax.imshow(mdp.grid, cmap="gray_r", origin="upper")
+        obstacles_x = np.where(mdp.grid == 1)[0]
+        obstacles_y = np.where(mdp.grid == 1)[1]
+        for i in range(len(obstacles_x)):
+            agent_circle = plt.Circle((obstacles_x[i], obstacles_y[i]), 0.2, color='black', ec='black', lw=2, zorder=10)
+            ax.add_patch(agent_circle)
+
         ax.set_aspect('equal')
 
         ax.set_xticks(np.arange(-0.5, mdp.ncols, 1), minor=True)
         ax.set_yticks(np.arange(-0.5, mdp.nrows, 1), minor=True)
-        ax.grid(which='minor', color='black', linestyle='-', linewidth=0.5)
+        ax.grid(which='minor', color='black', linestyle='-', linewidth=1)
 
-        # Pakete zeichnen
         for pid, loc in mdp.packages.items():
             if not delivered[pid] and carrying != pid:
                 ax.plot(loc[1], loc[0], 'bs', markersize=15, label=f"Paket {pid}")
@@ -54,11 +59,14 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
 
         # Agent zeichnen (Farbe ändert sich, wenn er trägt)
         agent_color = 'gold' if carrying is not None else 'royalblue'
-        agent_circle = plt.Circle((col, row), 0.1, color=agent_color, ec='black', lw=2, zorder=10)
+        agent_circle = plt.Circle((col, row), 0.15, color=agent_color, ec='black', lw=2, zorder=10)
         ax.add_patch(agent_circle)
 
         if carrying is not None:
             ax.text(col, row, f"P{carrying}", ha='center', va='center', fontweight='bold')
+            ax.set_title(f"Schritt: {frame_idx} | Trägt: Package P{carrying} | Geliefert: {list(delivered)}")
+        else:
+            ax.set_title(f"Schritt: {frame_idx} | No package carrying | Geliefert: {list(delivered)}")
 
 
         ax.set_title(f"Schritt: {frame_idx} | Trägt: Package P{carrying} | Geliefert: {list(delivered)}")
@@ -73,7 +81,9 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
     ani = animation.FuncAnimation(
         fig, update, frames=len(path_states), interval=50, repeat=False
     )
+    ax.grid(True)
 
+    plt.grid(True)
     plt.show()
     plt.close(fig)
 
@@ -100,6 +110,7 @@ def plot_steps(algorithm: str, policies):
 
 def plot_policy_changes():
     pass
+
 
 def plot_success_rate():
     pass
