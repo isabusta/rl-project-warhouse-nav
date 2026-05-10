@@ -84,7 +84,7 @@ def q_learning(mdp: WarehouseMDP,
 
     return Q, rewards_per_episode, policies
 
-def sarsa(mdp: WarehouseMDP, alpha, gamma, epsilon, episodes=100, max_iter=100):
+def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, max_iter=100):
 
     Q = np.zeros((mdp.n_states, mdp.n_actions))
 

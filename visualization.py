@@ -1,25 +1,21 @@
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
-
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
 from mdp import WarehouseMDP, ACTION_NAMES
+import matplotlib.pyplot as plt
+import streamlit as st
 
 
 def animate_agent(mdp: WarehouseMDP, policy, start_state):
 
     path_states = [start_state]
     state = start_state
-    total = 0
+    steps = mdp.nrows * mdp.ncols
 
-    for step in range(30):
+    for step in range(steps):
         s = mdp.state_index[state]
         a = policy[s]
         state, reward, done = mdp.step(state, a)
-        total += reward
         print(f"{step + 1:<5} {ACTION_NAMES[a]:<10} {reward:>+7.0f}")
         path_states.append(state)
         if done:
@@ -68,8 +64,6 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
         else:
             ax.set_title(f"Schritt: {frame_idx} | No package carrying | Geliefert: {list(delivered)}")
 
-
-        ax.set_title(f"Schritt: {frame_idx} | Trägt: Package P{carrying} | Geliefert: {list(delivered)}")
         ax.set_xlim(-0.5, mdp.ncols - 0.5)
         ax.set_ylim(mdp.nrows - 0.5, -0.5)
 
@@ -87,25 +81,60 @@ def animate_agent(mdp: WarehouseMDP, policy, start_state):
     plt.show()
     plt.close(fig)
 
-    return total
+    return ani
 
 def visualize_learning(mdp: WarehouseMDP, policies) -> None:
-    rewards = {}
     for episode, policy in policies.items():
         print(f"\n--- Episode following policy ---")
         print("-" * 25)
         start_state = mdp.reset()
-        rewards[episode] = animate_agent(mdp, policy, start_state)
+        animate_agent(mdp, policy, start_state)
 
 
 # plot a line how the reward changes over the episodes
-def plot_rewards(algorithm: str, policies):
-    episodes = len(policies)
-    pass
+def plot_rewards(algorithm, policies, rewards):
+
+    episodes = len(rewards)
+
+    fig, ax = plt.subplots()
+    ax.plot(np.arange(episodes), rewards)
+
+    ax.set_title(f"{algorithm} | Total Rewards per Episode")
+    ax.set_xlabel("Episode")
+    ax.set_ylabel("Total Reward")
+
+    st.pyplot(fig)
+    plt.close(fig)
 
 # Todo plot the number steps until goal is achieved
-def plot_steps(algorithm: str, policies):
-    pass
+def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
+
+    steps = []
+    # max number of steps
+    max_steps = mdp.nrows * mdp.ncols
+    start_state = mdp.reset()
+
+    for policy in policies.values():
+        n_steps = follow_policy(mdp, policy, start_state=start_state)
+        steps.append(n_steps)
+
+    fig, ax = plt.subplots()
+
+    episodes = np.arange(len(policies))
+
+    ax.plot(episodes, steps)
+
+    ax.set_title(f"{algorithm} | Steps per Episode")
+    ax.set_xlabel("Episode")
+    ax.set_ylabel("Steps until goal")
+
+    ax.set_yticks(np.arange(max_steps, step=2))
+
+    ax.grid(True)
+
+    st.pyplot(fig)
+    plt.show()
+    plt.close(fig)
 
 
 def plot_policy_changes():
@@ -114,5 +143,21 @@ def plot_policy_changes():
 
 def plot_success_rate():
     pass
+
+# Helper function to compute number of steps in each policy
+def follow_policy(mdp: WarehouseMDP, policy, start_state):
+
+    path_states = [start_state]
+    state = start_state
+    steps = mdp.nrows * mdp.ncols
+
+    for step in range(steps):
+        s = mdp.state_index[state]
+        a = policy[s]
+        state, reward, done = mdp.step(state, a)
+        path_states.append(state)
+        if done:
+            return step + 1
+    return steps
 
 
