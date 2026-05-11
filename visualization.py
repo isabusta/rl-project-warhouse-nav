@@ -114,6 +114,7 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
     max_steps = mdp.nrows * mdp.ncols
     start_state = mdp.reset()
 
+    # compute number of steps to reach goal
     for policy in policies.values():
         n_steps = follow_policy(mdp, policy, start_state=start_state)
         steps.append(n_steps)

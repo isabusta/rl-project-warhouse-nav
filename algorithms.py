@@ -189,6 +189,7 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
         Q          = mdp.R + mdp.gamma * (mdp.P @ V)
         new_policy = Q.argmax(axis=1)
 
+
         if np.all(new_policy == policy):
             print(f"Policy iteration converged in {it} iterations")
             break
@@ -197,6 +198,6 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
     return V, policy
 
 
-def compare_policies():
-    pass
+def compare_policies(policy1, policy2):
+    return policy1 == policy2
 

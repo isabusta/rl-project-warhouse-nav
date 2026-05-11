@@ -1,9 +1,9 @@
 import streamlit as st
 from st_selectable_grid import st_selectable_grid
 
-from algorithms import q_learning
+from algorithms import q_learning, sarsa
 from mdp import WarehouseMDP
-from visualization import visualize_learning, plot_rewards, plot_steps
+from visualization import visualize_learning, plot_rewards, plot_steps, plot_success_rate, plot_policy_changes
 
 mdp = None
 
@@ -91,7 +91,10 @@ if start_button:
 
     elif algorithm == "SARSA":
         st.write("Running SARSA...")
-        # policy, Q = run_sarsa(mdp)
+        Q, rewards, policies = sarsa(mdp, 0.99)
+        st.session_state.rewards = rewards
+        st.session_state.policies = policies
+        st.session_state.algorithm = algorithm
 
     elif algorithm == "Value Iteration":
         st.write("Running Value Iteration...")
@@ -175,22 +178,27 @@ st.markdown("**MDP Summary:**")
 with st.container():
     st.markdown("### 📊 Training Results")
 
-    if "rewards" in st.session_state:
-        plot_rewards(
+    if st.session_state.algorithm is None:
+        st.info("Run an algorithm to see results.")
+
+    else:
+        if "rewards" in st.session_state:
+            plot_rewards(
             st.session_state.algorithm,
             st.session_state.policies,
             st.session_state.rewards
         )
 
-    if "rewards" in st.session_state:
         plot_steps(
             st.session_state.algorithm,
             st.session_state.policies,
             st.session_state.rewards
         )
 
-    else:
-        st.info("Run an algorithm to see results.")
+        plot_success_rate()
+
+        plot_policy_changes()
+
 
 errors = []
 if start_pos is None:

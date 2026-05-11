@@ -183,7 +183,8 @@ class WarehouseMDP:
                 return
 
         self.grid[x][y] = 1
-        pass
+
+        self.rebuild_mdp()
 
     def add_obstacles(self, x_positions, y_positions):
          assert len(x_positions) == len(y_positions)
@@ -197,8 +198,36 @@ class WarehouseMDP:
 
                 if (x, y) == (px, py) or (x, y) == (sx, sy):
                     continue
-                self.grid[x][y] = 1
-    pass
+                else:
+                    self.grid[x][y] = 1
+
+         self.rebuild_mdp()
+
+
+    def rebuild_mdp(self):
+        # enumerate states
+        self.states = self._enumerate_states()
+        self.state_index = {s: i for i, s in enumerate(self.states)}
+
+        # P[s, a, s'] and R[s, a]
+        self.P, self.R = self._build_matrices()
+
+    def add_random_obstacle(self, p=0.3):
+
+        if np.random.rand() > p:
+            return
+
+        free_cells = np.argwhere(self.grid == 0)
+
+        x, y = free_cells[np.random.randint(len(free_cells))]
+
+        forbidden = set(self.packages.values()) | set(self.storages.values())
+
+        if (x, y) in forbidden:
+            return
+
+        self.grid[x][y] = 1
+        self.rebuild_mdp()
 
 
 
