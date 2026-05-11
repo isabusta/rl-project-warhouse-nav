@@ -1,6 +1,11 @@
 import streamlit as st
 from st_selectable_grid import st_selectable_grid
+
+from algorithms import q_learning
 from mdp import WarehouseMDP
+from visualization import visualize_learning, plot_rewards, plot_steps
+
+mdp = None
 
 st.set_page_config(
     page_title="Warehouse Layout Designer",
@@ -57,6 +62,45 @@ def set_unique(r, c, code):
 st.title("Warehouse Layout Designer")
 st.caption("Design your warehouse layout — the MDP is built automatically below.")
 st.divider()
+
+# Algorithms
+
+st.subheader("Reinforcement Learning / Planning")
+
+algorithm = st.selectbox(
+    "Select algorithm",
+    ["Q-Learning", "SARSA", "Value Iteration", "Policy Iteration"]
+)
+
+start_button = st.button("🚀 Start Algorithm")
+
+if start_button:
+    if st.session_state.mdp is None:
+        st.error("Please select a MDP")
+
+    st.info(f"Running: {algorithm}")
+    mdp = st.session_state.mdp
+
+    # ── PLACEHOLDER DISPATCH ─────────────────────────────
+    if algorithm == "Q-Learning":
+        st.write("Running Q-Learning...")
+        Q, rewards, policies = q_learning(mdp)
+        st.session_state.rewards = rewards
+        st.session_state.policies = policies
+        st.session_state.algorithm = algorithm
+
+    elif algorithm == "SARSA":
+        st.write("Running SARSA...")
+        # policy, Q = run_sarsa(mdp)
+
+    elif algorithm == "Value Iteration":
+        st.write("Running Value Iteration...")
+        # policy = value_iteration(mdp)
+
+    elif algorithm == "Policy Iteration":
+        st.write("Running Policy Iteration...")
+        # policy = policy_iteration(mdp)
+    st.success("Algorithm finished.")
 
 # Legend
 st.markdown("**Legend:**")
@@ -128,6 +172,26 @@ grid, start_pos, packages, storages = parse_layout(
 # ── Validate & MDP summary ───────────────────────────────────────────────
 st.markdown("**MDP Summary:**")
 
+with st.container():
+    st.markdown("### 📊 Training Results")
+
+    if "rewards" in st.session_state:
+        plot_rewards(
+            st.session_state.algorithm,
+            st.session_state.policies,
+            st.session_state.rewards
+        )
+
+    if "rewards" in st.session_state:
+        plot_steps(
+            st.session_state.algorithm,
+            st.session_state.policies,
+            st.session_state.rewards
+        )
+
+    else:
+        st.info("Run an algorithm to see results.")
+
 errors = []
 if start_pos is None:
     errors.append("No start position — place an **S** cell.")
@@ -147,6 +211,7 @@ else:
         packages=packages,
         storages=storages,
     )
+    st.session_state.mdp = mdp
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("States",   mdp.n_states)
     c2.metric("Actions",  mdp.n_actions)
@@ -156,3 +221,4 @@ else:
         f"P matrix: {mdp.P.shape}  |  R matrix: {mdp.R.shape}  |  "
         f"Packages: {packages}  |  Storages: {storages}"
     )
+

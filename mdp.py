@@ -178,11 +178,29 @@ class WarehouseMDP:
 
         for i in self.packages.keys():
             (px, py) = self.packages[i]
-            (sx, sy) = self.states[i]
+            (sx, sy) = self.storages[i]
             if (x, y ) == (px, py) or (x, y) == (sx, sy):
                 return
 
         self.grid[x][y] = 1
+        pass
+
+    def add_obstacles(self, x_positions, y_positions):
+         assert len(x_positions) == len(y_positions)
+
+         for i in range(len(x_positions)):
+             x, y = x_positions[i], y_positions[i]
+
+             for j in self.packages.keys():
+                (px, py) = self.packages[j]
+                (sx, sy) = self.storages[j]
+
+                if (x, y) == (px, py) or (x, y) == (sx, sy):
+                    continue
+                self.grid[x][y] = 1
+    pass
+
+
 
 
 # demo
