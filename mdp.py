@@ -221,9 +221,10 @@ class WarehouseMDP:
 
         x, y = free_cells[np.random.randint(len(free_cells))]
 
-        forbidden = set(self.packages.values()) | set(self.storages.values())
+        packages = set(self.packages.values())
+        storages = set(self.storages.values())
 
-        if (x, y) in forbidden:
+        if (x, y) in storages or (x, y) in packages:
             return
 
         self.grid[x][y] = 1
