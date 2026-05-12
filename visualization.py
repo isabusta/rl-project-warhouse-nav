@@ -130,10 +130,36 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 def plot_policy_changes():
     pass
 
-# Todo for every policy compute if the policy allows to achieve the goal
-# Do we need to set a maximum amount of step whenever we have more than this max step we have no sucecc
-def plot_success_rate(policies):
-    pass
+def plot_success_rate(mdp, policies, max_steps=None):
+        successes = 0
+        success_rates = []
+        episodes = []
+
+        for i, (episode, policy) in enumerate(policies.items(), start=1):
+
+            _, steps, done = follow_policy(
+                mdp,
+                policy,
+                start_state=mdp.reset()
+            )
+
+            if done and (max_steps is None or steps <= max_steps):
+                successes += 1
+
+            success_rate = successes / i
+
+            episodes.append(episode)
+            success_rates.append(success_rate)
+
+        # Plot
+        plt.figure(figsize=(8, 5))
+        plt.plot(episodes, success_rates)
+        plt.ylabel("Success Rate")
+        plt.xlabel("Episode")
+        plt.title("Running Success Rate")
+        plt.ylim(0, 1)
+        plt.tight_layout()
+        plt.show()
 
 # Helper function to compute number of steps in each policy
 def follow_policy(mdp: WarehouseMDP, policy, start_state):
