@@ -44,6 +44,7 @@ def q_learning(mdp: WarehouseMDP,
 
     rewards_per_episode = []
     policies = {}
+    added_obstacles = {}
 
     for episode in range(n_episodes):
 
@@ -84,9 +85,10 @@ def q_learning(mdp: WarehouseMDP,
         rewards_per_episode.append(total_reward)
 
         if episode == 350 and add_rand_obstacle:
-            mdp.add_random_obstcale()
+            (x, y) = mdp.add_random_obstcale()
+            added_obstacles[episode] = (x, y)
 
-    return Q, rewards_per_episode, policies
+    return Q, rewards_per_episode, policies, added_obstacles
 
 def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, max_iter=100):
 
