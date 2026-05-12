@@ -151,6 +151,33 @@ class WarehouseMDP:
     def get_reward(self, state, action: int) -> float:
         return self.R[self.state_index[state], action]
 
+    def action_masks(self, state) -> np.ndarray:
+        pos, carrying, delivered = state
+        row, col = pos
+
+        # start with all actions invalid
+        mask = np.zeros(self.n_actions, dtype=np.int8)
+
+        # for each movement action, compute where the robot would land
+        # and check if that cell is in bounds and not a wall
+        for a, (dr, dc) in ACTION_DELTAS.items():
+            nr, nc = row + dr, col + dc
+            if 0 <= nr < self.nrows and 0 <= nc < self.ncols and self.grid[nr, nc] == 0:
+                mask[a] = 1
+
+        # PICKUP is valid only if: hands are empty, standing on an undelivered package
+        if carrying is None:
+            for pid, loc in self.packages.items():
+                if pos == loc and not delivered[pid]:
+                    mask[PICKUP] = 1
+                    break  # found one valid package, no need to check the rest
+
+        # DELIVER is valid only if: holding a package and standing on its storage cell
+        if carrying is not None and pos == self.storages[carrying]:
+            mask[DELIVER] = 1
+
+        return mask
+
     #  Gymnasium-style interface
     def reset(self):
         return (self.start_pos, None, tuple([False] * self.n_packages))

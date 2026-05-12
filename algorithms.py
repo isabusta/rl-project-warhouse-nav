@@ -52,11 +52,17 @@ def q_learning(mdp: WarehouseMDP,
 
         for step in range(max_steps):
 
-            # epsilon greedy
+            # get valid actions for current state
+            mask = mdp.action_masks(state)
+            valid_actions = np.where(mask == 1)[0]
+
+            # epsilon greedy — only explore/exploit among valid actions
             if random.random() < epsilon:
-                action = random.randint(0, mdp.n_actions - 1)
+                action = random.choice(valid_actions)
             else:
-                action = np.argmax(Q[state_idx])
+                # set invalid actions to -inf so argmax never picks them
+                q_masked = np.where(mask, Q[state_idx], -np.inf)
+                action = np.argmax(q_masked)
 
             next_state, reward, done = mdp.step(state, action)
             next_state_idx = mdp.state_index[next_state]
@@ -65,7 +71,10 @@ def q_learning(mdp: WarehouseMDP,
             if done:
                 td_target = reward
             else:
-                best_next = np.argmax(Q[next_state_idx])
+                # bootstrap only from valid actions in next state
+                next_mask = mdp.action_masks(next_state)
+                next_valid = np.where(next_mask == 1)[0]
+                best_next = next_valid[np.argmax(Q[next_state_idx, next_valid])]
                 td_target = reward + mdp.gamma * Q[next_state_idx, best_next]
 
             Q[state_idx, action] += alpha * (td_target - Q[state_idx, action])
