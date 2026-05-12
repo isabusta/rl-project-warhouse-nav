@@ -8,18 +8,7 @@ import streamlit as st
 
 def animate_agent(mdp: WarehouseMDP, policy, start_state):
 
-    path_states = [start_state]
-    state = start_state
-    steps = mdp.nrows * mdp.ncols
-
-    for step in range(steps):
-        s = mdp.state_index[state]
-        a = policy[s]
-        state, reward, done = mdp.step(state, a)
-        print(f"{step + 1:<5} {ACTION_NAMES[a]:<10} {reward:>+7.0f}")
-        path_states.append(state)
-        if done:
-            break
+    path_states, _ = follow_policy(mdp, policy, start_state)
 
     # 2. Plot Setup
     fig, ax = plt.subplots(figsize=(mdp.nrows + 2, mdp.ncols + 2))
@@ -116,7 +105,7 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 
     # compute number of steps to reach goal
     for policy in policies.values():
-        n_steps = follow_policy(mdp, policy, start_state=start_state)
+        _, n_steps = follow_policy(mdp, policy, start_state=start_state)
         steps.append(n_steps)
 
     fig, ax = plt.subplots()
@@ -158,7 +147,8 @@ def follow_policy(mdp: WarehouseMDP, policy, start_state):
         state, reward, done = mdp.step(state, a)
         path_states.append(state)
         if done:
-            return step + 1
-    return steps
+            return path_states, step + 1
+    
+    return path_states, steps
 
 
