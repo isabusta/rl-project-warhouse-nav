@@ -226,6 +226,8 @@ class WarehouseMDP:
 
         self.grid[x][y] = 1
         self.rebuild_mdp()
+      
+        return (x, y)
 
 
 
