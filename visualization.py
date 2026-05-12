@@ -105,7 +105,7 @@ def plot_moving_average_rewards(rewards, window=50):
     plt.show()
 
 # plot a line how the reward changes over the episodes
-def plot_rewards(algorithm, policies, rewards):
+def plot_rewards(algorithm, rewards):
 
     episodes = len(rewards)
 
