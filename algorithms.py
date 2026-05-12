@@ -31,12 +31,13 @@ def backwards_induction(mdp, T):
     return V, policy
 
 def q_learning(mdp: WarehouseMDP,
-               n_episodes=100,
+               n_episodes=500,
                max_steps=100,
                alpha=0.1,
                epsilon=1.0,
                epsilon_decay=0.995,
-               min_epsilon=0.01):
+               min_epsilon=0.01,
+               add_rand_obstacle = False):
 
     Q = np.zeros((mdp.n_states,
                   mdp.n_actions))
@@ -81,6 +82,9 @@ def q_learning(mdp: WarehouseMDP,
 
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
+
+        if episode == 350 and add_rand_obstacle:
+            mdp.add_random_obstcale()
 
     return Q, rewards_per_episode, policies
 
