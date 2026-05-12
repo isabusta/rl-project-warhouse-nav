@@ -130,8 +130,9 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 def plot_policy_changes():
     pass
 
-
-def plot_success_rate():
+# Todo for every policy compute if the policy allows to achieve the goal
+# Do we need to set a maximum amount of step whenever we have more than this max step we have no sucecc
+def plot_success_rate(policies):
     pass
 
 # Helper function to compute number of steps in each policy
