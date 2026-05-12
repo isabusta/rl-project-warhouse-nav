@@ -80,6 +80,30 @@ def visualize_learning(mdp: WarehouseMDP, policies) -> None:
         animate_agent(mdp, policy, start_state)
 
 
+def plot_moving_average_rewards(rewards, window=50):
+    rewards = np.array(rewards)
+
+    moving_avg = np.convolve(
+        rewards,
+        np.ones(window) / window,
+        mode="valid"
+    )
+
+    plt.figure(figsize=(8,5))
+    plt.plot(rewards, alpha=0.3, label="Raw rewards")
+    plt.plot(
+        range(window-1, len(rewards)),
+        moving_avg,
+        label=f"Moving average ({window})"
+    )
+
+    plt.xlabel("Episode")
+    plt.ylabel("Total Reward")
+    plt.title("Reward Learning Curve")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 # plot a line how the reward changes over the episodes
 def plot_rewards(algorithm, policies, rewards):
 
