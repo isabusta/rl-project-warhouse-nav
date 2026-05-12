@@ -195,7 +195,10 @@ with st.container():
             st.session_state.rewards
         )
 
-        plot_success_rate()
+        plot_success_rate(
+            st.session_state.mdp,
+            st.session_state.policies
+        )
 
         plot_policy_changes()
 

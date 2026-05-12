@@ -80,8 +80,32 @@ def visualize_learning(mdp: WarehouseMDP, policies) -> None:
         animate_agent(mdp, policy, start_state)
 
 
+def plot_moving_average_rewards(rewards, window=50):
+    rewards = np.array(rewards)
+
+    moving_avg = np.convolve(
+        rewards,
+        np.ones(window) / window,
+        mode="valid"
+    )
+
+    plt.figure(figsize=(8,5))
+    plt.plot(rewards, alpha=0.3, label="Raw rewards")
+    plt.plot(
+        range(window-1, len(rewards)),
+        moving_avg,
+        label=f"Moving average ({window})"
+    )
+
+    plt.xlabel("Episode")
+    plt.ylabel("Total Reward")
+    plt.title("Reward Learning Curve")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 # plot a line how the reward changes over the episodes
-def plot_rewards(algorithm, policies, rewards):
+def plot_rewards(algorithm, rewards):
 
     episodes = len(rewards)
 
@@ -130,9 +154,36 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 def plot_policy_changes():
     pass
 
+def plot_success_rate(mdp, policies, max_steps=None):
+        successes = 0
+        success_rates = []
+        episodes = []
 
-def plot_success_rate():
-    pass
+        for i, (episode, policy) in enumerate(policies.items(), start=1):
+
+            _, steps, done = follow_policy(
+                mdp,
+                policy,
+                start_state=mdp.reset()
+            )
+
+            if done and (max_steps is None or steps <= max_steps):
+                successes += 1
+
+            success_rate = successes / i
+
+            episodes.append(episode)
+            success_rates.append(success_rate)
+
+        # Plot
+        plt.figure(figsize=(8, 5))
+        plt.plot(episodes, success_rates)
+        plt.ylabel("Success Rate")
+        plt.xlabel("Episode")
+        plt.title("Running Success Rate")
+        plt.ylim(0, 1)
+        plt.tight_layout()
+        plt.show()
 
 # Helper function to compute number of steps in each policy
 def follow_policy(mdp: WarehouseMDP, policy, start_state):

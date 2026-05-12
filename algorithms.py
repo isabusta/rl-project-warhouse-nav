@@ -31,18 +31,20 @@ def backwards_induction(mdp, T):
     return V, policy
 
 def q_learning(mdp: WarehouseMDP,
-               n_episodes=100,
+               n_episodes=500,
                max_steps=100,
                alpha=0.1,
                epsilon=1.0,
                epsilon_decay=0.995,
-               min_epsilon=0.01):
+               min_epsilon=0.01,
+               add_rand_obstacle = False):
 
     Q = np.zeros((mdp.n_states,
                   mdp.n_actions))
 
     rewards_per_episode = []
     policies = {}
+    added_obstacles = {}
 
     for episode in range(n_episodes):
 
@@ -91,7 +93,11 @@ def q_learning(mdp: WarehouseMDP,
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
 
-    return Q, rewards_per_episode, policies
+        if episode == 350 and add_rand_obstacle:
+            (x, y) = mdp.add_random_obstcale()
+            added_obstacles[episode] = (x, y)
+
+    return Q, rewards_per_episode, policies, added_obstacles
 
 def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, max_iter=100):
 

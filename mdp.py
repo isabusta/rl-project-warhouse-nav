@@ -239,22 +239,22 @@ class WarehouseMDP:
         # P[s, a, s'] and R[s, a]
         self.P, self.R = self._build_matrices()
 
-    def add_random_obstacle(self, p=0.3):
-
-        if np.random.rand() > p:
-            return
+    def add_random_obstacle(self):
 
         free_cells = np.argwhere(self.grid == 0)
 
         x, y = free_cells[np.random.randint(len(free_cells))]
 
-        forbidden = set(self.packages.values()) | set(self.storages.values())
+        packages = set(self.packages.values())
+        storages = set(self.storages.values())
 
-        if (x, y) in forbidden:
+        if (x, y) in storages or (x, y) in packages:
             return
 
         self.grid[x][y] = 1
         self.rebuild_mdp()
+      
+        return (x, y)
 
 
 
