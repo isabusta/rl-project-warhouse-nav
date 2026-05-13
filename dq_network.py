@@ -34,19 +34,22 @@ class ReplayBuffer:
         actions = []
         rewards = []
         next_states = []
+        next_masks = []
         dones = []
         for x in sample:
             states.append(x[0])
             actions.append(x[1])
             rewards.append(x[2])
             next_states.append(x[3])
-            dones.append(x[4])
+            next_masks.append(x[4])
+            dones.append(x[5])
         states = torch.tensor(states).to(device)
         actions = torch.tensor(actions).to(device)
         rewards = torch.tensor(rewards).to(device)
         next_states = torch.tensor(next_states).to(device)
+        next_masks = torch.tensor(next_masks).to(device)
         dones = torch.tensor(dones, dtype=torch.int).to(device)
-        return states, actions, rewards, next_states, dones
+        return states, actions, rewards, next_states, next_masks, dones
     
     # add transition to the buffer
     def append(self, item):
