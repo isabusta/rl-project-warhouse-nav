@@ -31,18 +31,20 @@ def backwards_induction(mdp, T):
     return V, policy
 
 def q_learning(mdp: WarehouseMDP,
-               n_episodes=100,
+               n_episodes=500,
                max_steps=100,
                alpha=0.1,
                epsilon=1.0,
                epsilon_decay=0.995,
-               min_epsilon=0.01):
+               min_epsilon=0.01,
+               add_rand_obstacle = False):
 
     Q = np.zeros((mdp.n_states,
                   mdp.n_actions))
 
     rewards_per_episode = []
     policies = {}
+    added_obstacles = {}
 
     for episode in range(n_episodes):
 
@@ -52,11 +54,17 @@ def q_learning(mdp: WarehouseMDP,
 
         for step in range(max_steps):
 
-            # epsilon greedy
+            # get valid actions for current state
+            mask = mdp.action_masks(state)
+            valid_actions = np.where(mask == 1)[0]
+
+            # epsilon greedy — only explore/exploit among valid actions
             if random.random() < epsilon:
-                action = random.randint(0, mdp.n_actions - 1)
+                action = random.choice(valid_actions)
             else:
-                action = np.argmax(Q[state_idx])
+                # set invalid actions to -inf so argmax never picks them
+                q_masked = np.where(mask, Q[state_idx], -np.inf)
+                action = np.argmax(q_masked)
 
             next_state, reward, done = mdp.step(state, action)
             next_state_idx = mdp.state_index[next_state]
@@ -65,7 +73,10 @@ def q_learning(mdp: WarehouseMDP,
             if done:
                 td_target = reward
             else:
-                best_next = np.argmax(Q[next_state_idx])
+                # bootstrap only from valid actions in next state
+                next_mask = mdp.action_masks(next_state)
+                next_valid = np.where(next_mask == 1)[0]
+                best_next = next_valid[np.argmax(Q[next_state_idx, next_valid])]
                 td_target = reward + mdp.gamma * Q[next_state_idx, best_next]
 
             Q[state_idx, action] += alpha * (td_target - Q[state_idx, action])
@@ -82,7 +93,11 @@ def q_learning(mdp: WarehouseMDP,
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
 
-    return Q, rewards_per_episode, policies
+        if episode == 350 and add_rand_obstacle:
+            (x, y) = mdp.add_random_obstcale()
+            added_obstacles[episode] = (x, y)
+
+    return Q, rewards_per_episode, policies, added_obstacles
 
 def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, max_iter=100):
 

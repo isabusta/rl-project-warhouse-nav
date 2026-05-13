@@ -8,18 +8,7 @@ import streamlit as st
 
 def animate_agent(mdp: WarehouseMDP, policy, start_state):
 
-    path_states = [start_state]
-    state = start_state
-    steps = mdp.nrows * mdp.ncols
-
-    for step in range(steps):
-        s = mdp.state_index[state]
-        a = policy[s]
-        state, reward, done = mdp.step(state, a)
-        print(f"{step + 1:<5} {ACTION_NAMES[a]:<10} {reward:>+7.0f}")
-        path_states.append(state)
-        if done:
-            break
+    path_states, _ = follow_policy(mdp, policy, start_state)
 
     # 2. Plot Setup
     fig, ax = plt.subplots(figsize=(mdp.nrows + 2, mdp.ncols + 2))
@@ -91,8 +80,32 @@ def visualize_learning(mdp: WarehouseMDP, policies) -> None:
         animate_agent(mdp, policy, start_state)
 
 
+def plot_moving_average_rewards(rewards, window=50):
+    rewards = np.array(rewards)
+
+    moving_avg = np.convolve(
+        rewards,
+        np.ones(window) / window,
+        mode="valid"
+    )
+
+    plt.figure(figsize=(8,5))
+    plt.plot(rewards, alpha=0.3, label="Raw rewards")
+    plt.plot(
+        range(window-1, len(rewards)),
+        moving_avg,
+        label=f"Moving average ({window})"
+    )
+
+    plt.xlabel("Episode")
+    plt.ylabel("Total Reward")
+    plt.title("Reward Learning Curve")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 # plot a line how the reward changes over the episodes
-def plot_rewards(algorithm, policies, rewards):
+def plot_rewards(algorithm, rewards):
 
     episodes = len(rewards)
 
@@ -116,7 +129,7 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 
     # compute number of steps to reach goal
     for policy in policies.values():
-        n_steps = follow_policy(mdp, policy, start_state=start_state)
+        _, n_steps = follow_policy(mdp, policy, start_state=start_state)
         steps.append(n_steps)
 
     fig, ax = plt.subplots()
@@ -141,9 +154,36 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies):
 def plot_policy_changes():
     pass
 
+def plot_success_rate(mdp, policies, max_steps=None):
+        successes = 0
+        success_rates = []
+        episodes = []
 
-def plot_success_rate():
-    pass
+        for i, (episode, policy) in enumerate(policies.items(), start=1):
+
+            _, steps, done = follow_policy(
+                mdp,
+                policy,
+                start_state=mdp.reset()
+            )
+
+            if done and (max_steps is None or steps <= max_steps):
+                successes += 1
+
+            success_rate = successes / i
+
+            episodes.append(episode)
+            success_rates.append(success_rate)
+
+        # Plot
+        plt.figure(figsize=(8, 5))
+        plt.plot(episodes, success_rates)
+        plt.ylabel("Success Rate")
+        plt.xlabel("Episode")
+        plt.title("Running Success Rate")
+        plt.ylim(0, 1)
+        plt.tight_layout()
+        plt.show()
 
 # Helper function to compute number of steps in each policy
 def follow_policy(mdp: WarehouseMDP, policy, start_state):
@@ -158,7 +198,8 @@ def follow_policy(mdp: WarehouseMDP, policy, start_state):
         state, reward, done = mdp.step(state, a)
         path_states.append(state)
         if done:
-            return step + 1
-    return steps
+            return path_states, step + 1
+    
+    return path_states, steps
 
 
