@@ -1,0 +1,182 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+%%% Notation (same as report) %%%
+\newcommand{\states}{\ensuremath{\mathcal{S}}}
+\newcommand{\actions}{\ensuremath{\mathcal{A}}}
+\newcommand{\policy}{\ensuremath{\pi}}
+\newcommand{\actionval}{\ensuremath{q}}
+\newcommand{\optaval}{\ensuremath{q_*}}
+\newcommand{\reward}{\ensuremath{\mathcal{R}}}
+\newcommand{\transition}{\ensuremath{\mathcal{P}}}
+\newcommand{\discount}{\ensuremath{\gamma}}
+
+% -----------------------------
+
+\title{Warehouse Navigation via Reinforcement Learning}
+\subtitle{Reinforcement Learning and Decision Making Under Uncertainty}
+\author{NAME 1 \and NAME 2}
+\institute{University Name}
+\date{Spring 2022}
+
+% -----------------------------
+% ============================================================
+% TIMING GUIDE  (7 min talk + 3 min Q&A)
+%   Slide 1  — Title              ~0:00–0:20  (20 s)
+%   Slide 2  — Problem & MDP      ~0:20–1:30  (70 s)
+%   Slide 3  — Environment        ~1:30–2:30  (60 s)
+%   Slide 4  — Algorithms         ~2:30–4:00  (90 s)
+%   Slide 5  — Results            ~4:00–5:30  (90 s)
+%   Slide 6  — Robustness         ~5:30–6:30  (60 s)
+%   Slide 7  — Conclusion         ~6:30–7:00  (30 s)
+% ============================================================
+
+\begin{document}
+
+% --- Slide 1 (~20 s) ---
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% --- Slide 2 (~70 s) ---
+\begin{frame}{Problem, MDP \& Approach}
+  % What is the problem, how is it modelled as an MDP, which algorithms were used?
+  \begin{columns}
+    \column{0.5\textwidth}
+      \textbf{Problem}
+      \begin{itemize}
+        \item
+        \item
+      \end{itemize}
+      \textbf{MDP: } $(\states, \actions, \transition, \reward, \discount)$
+      \begin{itemize}
+        \item $\states$ —
+        \item $\actions$ —
+        \item $\reward$ —
+        \item $\discount$ —
+      \end{itemize}
+    \column{0.5\textwidth}
+      \textbf{Algorithms}
+      \begin{itemize}
+        \item Q-Learning
+        \item SARSA
+        \item DQN
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% --- Slide 3 (~60 s) ---
+\begin{frame}{Environment}
+  % Grid layout figure on the right; key properties on the left.
+  \begin{columns}
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Grid size:
+        \item Obstacles:
+        \item Start / Goal:
+        \item Stochasticity:
+        \item Episode ends when:
+      \end{itemize}
+    \column{0.5\textwidth}
+      % \includegraphics[width=\textwidth]{figures/warehouse_env.png}
+      [FIGURE]
+  \end{columns}
+\end{frame}
+
+% --- Slide 4 (~90 s) ---
+\begin{frame}{Algorithms \& Key Equations}
+  % Show the update rule for each algorithm side by side or stacked.
+  \textbf{Q-Learning / SARSA update:}
+  \[
+    \actionval(s_t,a_t) \leftarrow \actionval(s_t,a_t)
+    + \alpha\bigl[r_t + \discount\, \actionval(s_{t+1},a') - \actionval(s_t,a_t)\bigr]
+  \]
+  % Q-Learning: a' = argmax; SARSA: a' ~ policy
+
+  \textbf{DQN loss:}
+  \[
+    \mathcal{L}(\theta) = \mathbb{E}\!\left[
+      \bigl(r + \discount\max_{a'}\actionval(s',a';\theta^{-})
+      - \actionval(s,a;\theta)\bigr)^2\right]
+  \]
+
+  \begin{table}
+    \centering
+    \small
+    \begin{tabular}{lccc}
+      \toprule
+      Parameter & Q-Learning & SARSA & DQN \\
+      \midrule
+      $\alpha$          & & & \\
+      $\discount$       & & & \\
+      $\varepsilon$     & & & \\
+      Episodes          & & & \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+% --- Slide 5 (~90 s) ---
+\begin{frame}{Results}
+  % Two panels: learning curve + robustness table.
+  \begin{columns}
+    \column{0.55\textwidth}
+      % \includegraphics[width=\textwidth]{figures/learning_curve.png}
+      [FIGURE: reward vs.\ episode]
+    \column{0.45\textwidth}
+      \begin{table}
+        \centering
+        \small
+        \begin{tabular}{lc}
+          \toprule
+          Condition & Success \\
+          \midrule
+          Baseline      & \\
+          Slip $p=0.1$  & \\
+          Slip $p=0.2$  & \\
+          Unseen map    & \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+      \begin{itemize}
+        \item % key finding 1
+        \item % key finding 2
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% --- Slide 6 (~60 s) ---
+\begin{frame}{Robustness}
+  % What perturbations were tested? What held up and what broke?
+  \begin{itemize}
+    \item Stochasticity ($p$ varied):
+    \item Unseen layouts:
+    \item Reward perturbations:
+    \item Hyperparameter sensitivity:
+  \end{itemize}
+\end{frame}
+
+% --- Slide 7 (~30 s) ---
+\begin{frame}{Conclusion}
+  % One bullet per point — keep it tight.
+  \textbf{Summary}
+  \begin{itemize}
+    \item
+  \end{itemize}
+  \textbf{Limitations \& Future Work}
+  \begin{itemize}
+    \item
+    \item
+  \end{itemize}
+\end{frame}
+
+\end{document}
