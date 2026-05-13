@@ -1,0 +1,198 @@
+\documentclass[a4paper,11pt]{article}
+
+
+% Please do not change the packages and commands listed here. You can of course add your favourite packages and commands.
+
+%%% Pakete %%%
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage{enumerate}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{paralist}
+\usepackage{dsfont}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{verbatim}
+\usepackage{ dsfont }
+\usepackage{ xcolor }
+\usepackage{environ}
+\usepackage{lipsum}
+
+
+%%% Additional Commands %%%
+
+%% These commands might mak it easier for you to write formal statements.
+
+\newcommand{\N}{\ensuremath{\mathds{N}}} % natural numbers
+\newcommand{\Z}{\ensuremath{\mathds{Z}}} % integers
+\newcommand{\Q}{\ensuremath{\mathds{Q}}} % rational numbers
+\newcommand{\R}{\ensuremath{\mathds{R}}} % real numbers
+
+\newcommand{\states}{\ensuremath{\mathcal{S}}} % state space
+\newcommand{\actions}{\ensuremath{\mathcal{A}}} % action space
+\newcommand{\policy}{\ensuremath{\pi}} % a policy
+\newcommand{\stateval}{\ensuremath{v}} % state value function
+\newcommand{\actionval}{\ensuremath{q}} % action value function
+\newcommand{\optsval}{\ensuremath{v_*}} % state value function
+\newcommand{\optaval}{\ensuremath{q_*}} % action value function
+\newcommand{\reward}{\ensuremath{\mathcal{R}}} % reward function
+\newcommand{\transition}{\ensuremath{\mathcal{P}}} % transition function
+\newcommand{\discount}{\ensuremath{\gamma}} % discount factor
+
+% Wrap AI-assisted text in this to highlight it blue (required by course policy)
+\newcommand{\aitxt}[1]{\textcolor{blue}{#1}}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
+\theoremstyle{definition}
+\newtheorem{prob}{Exercise}
+\newtheorem{pcode}{Pseudocode}
+
+
+
+
+% -----------------------------
+\begin{document}
+
+%%% TITLE PAGE %%%
+%   - Please only modify your name(s) and do not change anything else! %
+
+\begin{titlepage}
+\pagestyle{empty}
+  \begin{minipage}[t]{0.6\textwidth}
+    \begin{flushleft}
+      \bf
+      Reinforcement Learning and Decision Making Under Uncertainty\\
+    \end{flushleft}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.3\textwidth}
+    \begin{flushright}
+      \bf Spring 2022\\
+      FistName, LastName
+    \end{flushright}
+  \end{minipage}
+
+	\medskip
+
+  \begin{center}
+    {\Large\bf Project Report}
+
+  {\bf Submission Deadline: 03 June 2022, 14:00}
+    \Large
+    \vspace{2cm}
+
+    %%% ENTER THE NAMES OF GROUP MEMBERS HERE %%%
+    %
+    {Group:}\\
+    {NAME 1}\\
+    {NAME 2}
+
+    \vspace{2cm}
+    \begin{tabular}[b]{|l|r|}
+    \hline
+    Introduction, Related Work, Preliminaries &\qquad\qquad/\;\;5\\\hline
+    Structure, Notation, Formal correctness &\qquad\qquad/\;\;5\\\hline
+    Main Content and Explanations &\qquad\qquad/30\\\hline
+    Discussion \& Conclusion&\qquad\qquad/10\\\hline
+    $\Sigma$&\qquad\qquad/50\\\hline
+    \end{tabular}
+  \end{center}
+\end{titlepage}
+%%% END TITLE PAGE %%%
+
+
+
+
+\newpage
+\pagestyle{plain}
+\pagenumbering{arabic}
+
+
+\section{Introduction}
+% What is the problem, why does it matter, and what does this report do?
+
+\subsection*{Related Work}
+% 2--3 relevant works and how they relate to this project. Cite with \cite{}.
+
+
+\section{Preliminaries}
+
+\subsection{MDP Formulation}
+% Define the MDP tuple $(\states, \actions, \transition, \reward, \discount)$ for this problem.
+% State the Bellman optimality equation and the definition of the optimal policy.
+
+
+\section{Environment}
+
+\subsection{Environment Description}
+% Grid size, obstacle layout, start state, goal state(s). Include a figure.
+
+\subsection{Implementation Details}
+% State encoding, episode termination condition, stochasticity. Link to code repository.
+
+
+\section{Algorithms}
+
+\subsection{Q-Learning}
+% Write the Q-learning update equation and describe the exploration strategy.
+
+\subsection{SARSA}
+%
+
+\subsection{Deep Q-Network (DQN)}
+% Write the DQN loss function. Mention replay buffer and target network.
+
+
+\subsection{Hyperparameters}
+% Table: learning rate, discount factor, exploration schedule, episodes, and DQN-specific params.
+
+
+\section{Experiments}
+
+\subsection{Hypotheses}
+% List the specific questions the experiments aim to answer.
+
+\subsection{Setup}
+% Environment variant(s), number of runs, random seeds, evaluation metric, baselines.
+
+\subsection{Results}
+% Learning curves and/or tables. Figure: reward vs.\ episode.
+
+\subsection{Discussion}
+% Interpret the results. What explains the observed behaviour?
+
+
+\section{Robustness}
+
+\subsection{Robustness Analysis}
+% Dimensions tested: stochasticity, unseen layouts, reward perturbations, hyperparameter sensitivity.
+
+\subsection{Results}
+% Table: performance under each condition. Discuss what the policy tolerates and where it breaks.
+
+
+\section{Conclusion}
+
+\subsection{Limitations}
+% What does the approach not handle well?
+
+\subsection{Future Work}
+% Possible extensions to the project.
+
+
+\section*{Use of External Aids}
+% List every book, paper, URL, library, and AI tool used. Highlight AI-assisted text with \aitxt{}.
+
+
+\bibliographystyle{alpha}
+\bibliography{references}
+
+
+
+
+\end{document}
