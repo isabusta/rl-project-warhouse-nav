@@ -30,7 +30,5 @@ if __name__ == "__main__":
     print(f"\n--- SARSA-Learning ---")
     Q, policies, rewards = sarsa(mdp, mdp.gamma)
 
-    plot_steps("SARSA", mdp, policies)
-
-    visualize_learning(mdp, policies)
+    plot_rewards("SARSA", policies, rewards)
 

@@ -103,7 +103,7 @@ def plot_rewards(algorithm, policies, rewards):
     ax.set_xlabel("Episode")
     ax.set_ylabel("Total Reward")
 
-    st.pyplot(fig)
+    plt.show()
     plt.close(fig)
 
 # Todo plot the number steps until goal is achieved
