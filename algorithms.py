@@ -177,18 +177,27 @@ def value_iteration(mdp, theta=1e-4, max_iter=1000):
     policy : np.ndarray  shape (n_states,)
     """
     V = np.zeros(mdp.n_states)
+    policy = np.zeros(mdp.n_states, dtype=int)
+
+    policies = {}
+    V_values = {}
 
     for it in range(1, max_iter + 1):
         Q     = mdp.R + mdp.gamma * (mdp.P @ V)   # (n_states, n_actions)
         V_new = Q.max(axis=1)
         delta = np.max(np.abs(V_new - V))
         V     = V_new
+
         if delta < theta:
             print(f"Value iteration converged in {it} iterations  (Δ={delta:.2e})")
             break
 
-    policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
-    return V, policy
+        policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
+
+        policies[it] = policy
+        V_values[it] = V
+
+    return V, policy, policies, V_values
 
 
 

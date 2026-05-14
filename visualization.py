@@ -1,5 +1,6 @@
 import matplotlib.animation as animation
 import numpy as np
+from IPython.core.pylabtools import figsize
 
 from mdp import WarehouseMDP, ACTION_NAMES
 import matplotlib.pyplot as plt
@@ -96,7 +97,7 @@ def plot_moving_average_rewards(rewards, window=50, plot_in_streamlit=False):
         mode="valid"
     )
 
-    fig = plt.figure(figsize=(8,5))
+    fig = plt.figure(figsize=(5,5))
     plt.plot(rewards, alpha=0.3, label="Raw rewards")
     plt.plot(
         range(window-1, len(rewards)),
@@ -119,7 +120,7 @@ def plot_rewards(algorithm, rewards, plot_in_streamlit=False):
 
     episodes = len(rewards)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
     ax.plot(np.arange(episodes), rewards)
 
     ax.set_title(f"{algorithm} | Total Rewards per Episode")
@@ -143,7 +144,7 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies, plot_in_streamlit=Fa
         _, n_steps, _ = follow_policy(mdp, policy, start_state=start_state)
         steps.append(n_steps)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
 
     episodes = np.arange(len(policies))
 
@@ -187,7 +188,7 @@ def plot_policy_changes(policies: dict, plot_in_streamlit=False):
 
         prev_policy = policy
 
-    fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(5, 5))
     plt.plot(episodes, change_rates)
     plt.xlabel("Episode")
     plt.ylabel("Policy Change Rate")
@@ -199,7 +200,7 @@ def plot_policy_changes(policies: dict, plot_in_streamlit=False):
     else:
         plt.show()
 
-def plot_success_rate(mdp, policies, max_steps=None, plot_in_streamlit=False):
+def plot_success_rate(algorithm: str, mdp, policies, max_steps=None, plot_in_streamlit=False):
         successes = 0
         success_rates = []
         episodes = []
@@ -225,7 +226,7 @@ def plot_success_rate(mdp, policies, max_steps=None, plot_in_streamlit=False):
         plt.plot(episodes, success_rates)
         plt.ylabel("Success Rate")
         plt.xlabel("Episode")
-        plt.title("Running Success Rate")
+        plt.title(f"Running Success Rate for {algorithm}")
         plt.ylim(0, 1)
         plt.tight_layout()
         if plot_in_streamlit:
@@ -257,6 +258,7 @@ def plot_optimal_policy(algorithm: str, mdp: WarehouseMDP, policy, plot_in_strea
 
     start_state = mdp.reset()
     path_states, _, _ = follow_policy(mdp, policy, start_state)
+    print(path_states)
 
     # 2. Plot Setup
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -306,7 +308,7 @@ def plot_optimal_policy(algorithm: str, mdp: WarehouseMDP, policy, plot_in_strea
 
 
 
-def plot_v_value_convergence(V_history, plot_in_streamlit=False):
+def plot_v_value_convergence(algorithm:str, V_history, plot_in_streamlit=False):
 
     iterations = sorted(V_history.keys())
     print(iterations)
@@ -324,10 +326,10 @@ def plot_v_value_convergence(V_history, plot_in_streamlit=False):
 
         prev_V = V
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
 
     ax.plot(iterations, diffs)
-    ax.set_title("Policy Iteration | V Convergence")
+    ax.set_title(f"{algorithm} | V value Convergence")
     ax.set_xlabel("Iteration")
     ax.set_ylabel("max |ΔV|")
     ax.grid(True)
@@ -349,7 +351,7 @@ def plot_mean_v_values(V_values, plot_in_streamlit=False):
     for it in iterations:
         means.append(np.mean(V_values[it]))
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
 
     ax.plot(iterations, means, marker="o")
 
@@ -389,5 +391,5 @@ def plot_policy_rewards(algorithm, mdp, policies):
 
         rewards.append(total_reward)
 
-    plot_rewards(algorithm, rewards)
+    plot_rewards(algorithm, rewards, plot_in_streamlit=True)
 
