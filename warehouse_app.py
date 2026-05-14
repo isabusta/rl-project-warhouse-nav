@@ -261,12 +261,12 @@ else:
                 plot_in_streamlit=True
             )
 
-    plot_steps(
-        st.session_state.algorithm,
-        st.session_state.mdp,
-        st.session_state.policies,
-        plot_in_streamlit=True
-    )
+        plot_steps(
+            st.session_state.algorithm,
+            st.session_state.mdp,
+            st.session_state.policies,
+            plot_in_streamlit=True
+        )
 
     with col2:
 

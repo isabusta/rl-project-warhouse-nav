@@ -2,10 +2,8 @@ import time
 
 import numpy as np
 from mdp import WarehouseMDP, ACTION_NAMES
-from algorithms import backwards_induction, value_iteration, policy_iteration, q_learning, sarsa
-from mdp_factory import initialize_mdp
-from visualization import animate_agent, visualize_learning, plot_rewards, plot_steps, plot_optimal_policy, \
-    plot_policy_changes, plot_v_value_convergence, plot_mean_v_values, plot_policy_rewards
+from algorithms import  sarsa
+from visualization import  plot_rewards, plot_optimal_policy
 
 if __name__ == "__main__":
     # ── Warehouse setup
@@ -40,7 +38,7 @@ if __name__ == "__main__":
     start_state = mdp.reset()
     s0 = mdp.state_index[start_state]
 
-    Q, rewards, policies, _ = sarsa(mdp)
+    Q, rewards, policies, _ = sarsa(mdp, add_rand_obstacle=True)
 
     last_idx = max(policies.keys())
     policy = policies[last_idx]
