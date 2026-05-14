@@ -2,8 +2,8 @@ import time
 
 import numpy as np
 from mdp import WarehouseMDP, ACTION_NAMES
-from algorithms import  sarsa
-from visualization import  plot_rewards, plot_optimal_policy
+from algorithms import sarsa, backwards_induction
+from visualization import plot_rewards, plot_optimal_policy, plot_values, plot_policy, plot_value_heatmap
 
 if __name__ == "__main__":
     # ── Warehouse setup
@@ -38,12 +38,10 @@ if __name__ == "__main__":
     start_state = mdp.reset()
     s0 = mdp.state_index[start_state]
 
-    Q, rewards, policies, _ = sarsa(mdp, add_rand_obstacle=True)
 
-    last_idx = max(policies.keys())
-    policy = policies[last_idx]
-
-    plot_rewards("SARSA", rewards, plot_in_streamlit=False)
-    plot_optimal_policy("SARSA", mdp, policy)
+    V, policy = backwards_induction(mdp, 10)
+    plot_values(V, False)
+    plot_policy(policy)
+    plot_value_heatmap(V)
 
 

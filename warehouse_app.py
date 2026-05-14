@@ -4,7 +4,8 @@ from st_selectable_grid import st_selectable_grid
 from algorithms import q_learning, sarsa, policy_iteration
 from mdp import WarehouseMDP
 from visualization import visualize_learning, plot_rewards, plot_steps, plot_success_rate, plot_policy_changes, \
-    plot_moving_average_rewards, plot_optimal_policy, plot_mean_v_values, plot_v_value_convergence, plot_policy_rewards
+    plot_moving_average_rewards, plot_optimal_policy, plot_mean_v_values, plot_v_value_convergence, plot_policy_rewards, \
+    plot_mean_rewards
 
 st.session_state.algorithm = None
 
@@ -82,37 +83,46 @@ algorithm = st.selectbox(
     ["Q-Learning", "SARSA", "Value Iteration", "Policy Iteration"]
 )
 if algorithm == "Q-Learning" or algorithm == "SARSA":
-    epsilon = st.number_input("Choose epsilon fo the training")
+    epsilon = st.number_input("Choose epsilon fo the training", 0.0001, 0.99)
     st.session_state.epsilon = epsilon
+    add_rand_obstacle = st.checkbox("Add random obstacles")
+    st.session_state.add_rand_obstacle = add_rand_obstacle
+
+
 
 if algorithm == "Policy Iteration" or algorithm == "Value Iteration":
-    theta = st.number_input("Choose Theta")
+    theta = st.number_input("Choose Theta", 0.0001, 1)
     st.session_state.theta = theta
 
-episodes = st.number_input("Choose number of episodes", 0, 50000, step=1)
+episodes = st.number_input("Choose number of episodes", 0, 10000, step=1)
 st.session_state.episodes = episodes
 
 start_button = st.button("🚀 Start Algorithm")
 
-if start_button:
+if start_button and episodes > 0:
 
     st.info(f"Running: {algorithm}")
     mdp = st.session_state.mdp
 
-    if not st.session_state.epsilon:
+    if "epsilon" not in st.session_state:
         epsilon = 0.1
     else:
         epsilon = st.session_state.epsilon
 
-    if not st.session_state.theta:
+    if "theta" not in st.session_state:
         theta = 1e-4
     else:
         theta = st.session_state.theta
 
+    if "add_rand_obstacle" in st.session_state:
+        add_rand_obstacle = st.session_state.add_rand_obstacle
+    else:
+        add_rand_obstacle = False
+
     # ── PLACEHOLDER DISPATCH ─────────────────────────────
     if algorithm == "Q-Learning":
         st.write("Running Q-Learning...")
-        Q, rewards, policies, _ = q_learning(st.session_state.mdp, n_episodes=st.session_state.episodes, epsilon=epsilon)
+        Q, rewards, policies, _ = q_learning(st.session_state.mdp, n_episodes=st.session_state.episodes, epsilon=epsilon, add_rand_obstacle=add_rand_obstacle)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
@@ -122,7 +132,7 @@ if start_button:
 
     elif algorithm == "SARSA":
         st.write("Running SARSA...")
-        Q, rewards, policies, _ = sarsa(st.session_state.mdp, episodes=st.session_state.episodes, epsilon=epsilon)
+        Q, rewards, policies, _ = sarsa(st.session_state.mdp, episodes=st.session_state.episodes, epsilon=epsilon, add_rand_obstacle=add_rand_obstacle)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
@@ -230,7 +240,7 @@ if st.session_state.algorithm is None:
 else:
 
     # ── TWO COLUMN LAYOUT ───────────────────────────────────────────────
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         if st.session_state.algorithm == "Policy Iteration" or st.session_state.algorithm == "Value Iteration":
@@ -288,6 +298,15 @@ else:
             st.session_state.last_policy,
             plot_in_streamlit=True
         )
+
+    with col3:
+        if algorithm == "Q-Learning" or "SARSA":
+            plot_mean_rewards(
+                st.session_state.algorithm,
+                st.session_state.rewards,
+                plot_in_streamlit=True
+            )
+
 
 
 errors = []

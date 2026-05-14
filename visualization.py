@@ -132,6 +132,26 @@ def plot_rewards(algorithm, rewards, plot_in_streamlit=False):
     else:
         plt.show()
 
+# plot a line how the reward changes over the episodes
+def plot_mean_rewards(algorithm, rewards, N=50, plot_in_streamlit=False):
+
+    cumsum = np.cumsum(np.insert(rewards, 0, 0))
+    rewards = (cumsum[N:] - cumsum[:-N]) / float(N)
+
+    episodes = len(rewards)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.plot(np.arange(episodes), rewards, label=f"{algorithm}")
+
+    ax.set_title(f"{algorithm} | Mean Rewards per Episode")
+    ax.set_xlabel("Episode")
+    ax.set_ylabel("Mean Reward")
+
+    if plot_in_streamlit:
+        st.pyplot(fig)
+    else:
+        plt.show()
+
 def plot_steps(algorithm: str, mdp: WarehouseMDP, policies, plot_in_streamlit=False):
 
     steps = []
@@ -393,3 +413,50 @@ def plot_policy_rewards(algorithm, mdp, policies):
 
     plot_rewards(algorithm, rewards, plot_in_streamlit=True)
 
+
+def plot_values(V, plot_in_streamlit=False):
+
+    T, n_states = V.shape
+
+    fig = plt.figure(figsize=(5,5))
+
+    for s in range(n_states):
+        plt.plot(range(T), V[:, s], label=f"state {s}")
+
+    plt.xlabel("time step t")
+    plt.ylabel("V_t(s)")
+    plt.title("Value Function over Time")
+    plt.legend()
+    plt.grid(True)
+
+    if plot_in_streamlit:
+        st.pyplot(fig)
+    else:
+        plt.show()
+
+    plt.close(fig)
+
+
+def plot_policy(policy):
+    plt.figure(figsize=(8,5))
+
+    plt.imshow(policy.T, aspect="auto", origin="lower")
+    plt.colorbar(label="action")
+
+    plt.xlabel("time step t")
+    plt.ylabel("state")
+    plt.title("Policy over Time")
+
+    plt.show()
+
+def plot_value_heatmap(V):
+    plt.figure(figsize=(8,5))
+
+    plt.imshow(V.T, aspect="auto", origin="lower")
+    plt.colorbar(label="Value")
+
+    plt.xlabel("time step t")
+    plt.ylabel("state")
+    plt.title("Value Function Heatmap")
+
+    plt.show()

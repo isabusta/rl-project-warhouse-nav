@@ -93,7 +93,7 @@ def q_learning(mdp: WarehouseMDP,
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
 
-        if episode in [500, 750] and add_rand_obstacle:
+        if episode in [500, 1000, 2000] and add_rand_obstacle:
             loc = mdp.add_random_obstacle()
             if loc is not None:
                 (x, y) = loc

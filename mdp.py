@@ -251,13 +251,12 @@ class WarehouseMDP:
         if (x, y) in storages or (x, y) in packages:
             return None
 
+
         self.grid[x, y] = 1
-        print("added grid")
+        print("added obstacle")
         self.rebuild_mdp()
       
         return x, y
-
-
 
 
 # demo
