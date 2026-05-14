@@ -31,7 +31,7 @@ def backwards_induction(mdp, T):
     return V, policy
 
 def q_learning(mdp: WarehouseMDP,
-               n_episodes=500,
+               n_episodes=3000,
                max_steps=100,
                alpha=0.1,
                epsilon=1.0,
@@ -93,35 +93,45 @@ def q_learning(mdp: WarehouseMDP,
         epsilon = max(min_epsilon, epsilon * epsilon_decay)
         rewards_per_episode.append(total_reward)
 
-        if episode == 350 and add_rand_obstacle:
-            (x, y) = mdp.add_random_obstcale()
-            added_obstacles[episode] = (x, y)
+        if episode in [500, 750] and add_rand_obstacle:
+            loc = mdp.add_random_obstacle()
+            if loc is not None:
+                (x, y) = loc
+                added_obstacles[episode] = (x, y)
 
     return Q, rewards_per_episode, policies, added_obstacles
 
-def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, max_iter=100):
-
+def sarsa(mdp: WarehouseMDP, epsilon = 0.1, alpha = 0.1, episodes=3000, max_iter=100, add_rand_obstacle=False):
+    gamma = mdp.gamma
     Q = np.zeros((mdp.n_states, mdp.n_actions))
 
     rewards_per_episode = []
     policies = {}
+    added_obstacles = {}
 
     for episode in range(episodes):
+
         state = mdp.reset()
         state_idx = mdp.state_index[state]
 
-        total_reward = 0
+        mask = mdp.action_masks(state)
+        valid_actions = np.where(mask == 1)[0]
 
-        action = epsilon_greedy(epsilon, mdp, Q, state_idx)
+        action = epsilon_greedy(epsilon, Q, state_idx, valid_actions, mask)
+
+        total_reward = 0
 
         for i in range(max_iter):
 
             next_state, reward, done = mdp.step(state, action)
             next_state_idx = mdp.state_index[next_state]
 
-            next_action = epsilon_greedy(epsilon, mdp, Q, next_state_idx)
-
             total_reward += reward
+
+            next_mask = mdp.action_masks(next_state)
+            next_valid = np.where(next_mask == 1)[0]
+
+            next_action = epsilon_greedy(epsilon, Q, next_state_idx, next_valid, next_mask)
 
             if done:
                 Q[state_idx, action] += alpha * (reward - Q[state_idx, action])
@@ -136,14 +146,22 @@ def sarsa(mdp: WarehouseMDP, gamma, epsilon = 0.1, alpha = 0.1, episodes=100, ma
         policies[episode] = np.argmax(Q, axis=1)
         rewards_per_episode.append(total_reward)
 
-    return Q, policies, rewards_per_episode
+        if episode in [500, 1000, 2000] and add_rand_obstacle:
+            loc = mdp.add_random_obstacle()
+            if loc is not None:
+                (x, y) = loc
+                added_obstacles[episode] = (x, y)
 
-def epsilon_greedy(epsilon, mdp, Q, state):
+    return Q, rewards_per_episode, policies, added_obstacles
+
+# state is state index: int
+def epsilon_greedy(epsilon, Q, state, valid_actions, mask):
     # epsilon greedy
     if random.random() < epsilon:
-        action = random.randint(0, mdp.n_actions - 1)
+        action = random.choice(valid_actions)
     else:
-        action = np.argmax(Q[state])
+        q_masked = np.where(mask, Q[state], -np.inf)
+        action = np.argmax(q_masked)
     return action
 
 
@@ -159,18 +177,27 @@ def value_iteration(mdp, theta=1e-4, max_iter=1000):
     policy : np.ndarray  shape (n_states,)
     """
     V = np.zeros(mdp.n_states)
+    policy = np.zeros(mdp.n_states, dtype=int)
+
+    policies = {}
+    V_values = {}
 
     for it in range(1, max_iter + 1):
         Q     = mdp.R + mdp.gamma * (mdp.P @ V)   # (n_states, n_actions)
         V_new = Q.max(axis=1)
         delta = np.max(np.abs(V_new - V))
         V     = V_new
+
         if delta < theta:
             print(f"Value iteration converged in {it} iterations  (Δ={delta:.2e})")
             break
 
-    policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
-    return V, policy
+        policy = (mdp.R + mdp.gamma * (mdp.P @ V)).argmax(axis=1)
+
+        policies[it] = policy
+        V_values[it] = V
+
+    return V, policy, policies, V_values
 
 
 
@@ -198,6 +225,8 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
     policy : np.ndarray  shape (n_states,)
     """
     policy = np.zeros(mdp.n_states, dtype=int)
+    policies = {}
+    V_values = {}
 
     for it in range(1, max_iter + 1):
         V          = policy_evaluation(mdp, policy, theta)
@@ -209,8 +238,10 @@ def policy_iteration(mdp, theta=1e-4, max_iter=100):
             print(f"Policy iteration converged in {it} iterations")
             break
         policy = new_policy
+        policies[it] = new_policy
+        V_values[it] = V
 
-    return V, policy
+    return V, policy, policies, V_values
 
 
 def compare_policies(policy1, policy2):

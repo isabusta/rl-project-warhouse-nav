@@ -249,12 +249,13 @@ class WarehouseMDP:
         storages = set(self.storages.values())
 
         if (x, y) in storages or (x, y) in packages:
-            return
+            return None
 
-        self.grid[x][y] = 1
+        self.grid[x, y] = 1
+        print("added grid")
         self.rebuild_mdp()
       
-        return (x, y)
+        return x, y
 
 
 

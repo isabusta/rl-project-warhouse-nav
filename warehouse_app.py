@@ -1,11 +1,21 @@
 import streamlit as st
 from st_selectable_grid import st_selectable_grid
 
-from algorithms import q_learning, sarsa
+from algorithms import q_learning, sarsa, policy_iteration
 from mdp import WarehouseMDP
-from visualization import visualize_learning, plot_rewards, plot_steps, plot_success_rate, plot_policy_changes
+from visualization import visualize_learning, plot_rewards, plot_steps, plot_success_rate, plot_policy_changes, \
+    plot_moving_average_rewards, plot_optimal_policy, plot_mean_v_values, plot_v_value_convergence, plot_policy_rewards
 
-mdp = None
+st.session_state.algorithm = None
+
+if "policies" not in st.session_state:
+    st.session_state.policies = {}
+if "rewards" not in st.session_state:
+    st.session_state.rewards = []
+if "algorithm" not in st.session_state:
+    st.session_state.algorithm = None
+if "V_values" not in st.session_state:
+    st.session_state.V_values = {}
 
 st.set_page_config(
     page_title="Warehouse Layout Designer",
@@ -71,38 +81,74 @@ algorithm = st.selectbox(
     "Select algorithm",
     ["Q-Learning", "SARSA", "Value Iteration", "Policy Iteration"]
 )
+if algorithm == "Q-Learning" or algorithm == "SARSA":
+    epsilon = st.number_input("Choose epsilon fo the training")
+    st.session_state.epsilon = epsilon
+
+if algorithm == "Policy Iteration" or algorithm == "Value Iteration":
+    theta = st.number_input("Choose Theta")
+    st.session_state.theta = theta
+
+episodes = st.number_input("Choose number of episodes", 0, 50000, step=1)
+st.session_state.episodes = episodes
 
 start_button = st.button("🚀 Start Algorithm")
 
 if start_button:
-    if st.session_state.mdp is None:
-        st.error("Please select a MDP")
 
     st.info(f"Running: {algorithm}")
     mdp = st.session_state.mdp
 
+    if not st.session_state.epsilon:
+        epsilon = 0.1
+    else:
+        epsilon = st.session_state.epsilon
+
+    if not st.session_state.theta:
+        theta = 1e-4
+    else:
+        theta = st.session_state.theta
+
     # ── PLACEHOLDER DISPATCH ─────────────────────────────
     if algorithm == "Q-Learning":
         st.write("Running Q-Learning...")
-        Q, rewards, policies = q_learning(mdp)
+        Q, rewards, policies, _ = q_learning(st.session_state.mdp, n_episodes=st.session_state.episodes, epsilon=epsilon)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
+        last_episode = max(policies.keys())
+        policy = policies[last_episode]
+        st.session_state.last_policy = policy
 
     elif algorithm == "SARSA":
         st.write("Running SARSA...")
-        Q, rewards, policies = sarsa(mdp, 0.99)
+        Q, rewards, policies, _ = sarsa(st.session_state.mdp, episodes=st.session_state.episodes, epsilon=epsilon)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
+        last_episode = max(policies.keys())
+        policy = policies[last_episode]
+        st.session_state.last_policy = policy
 
     elif algorithm == "Value Iteration":
         st.write("Running Value Iteration...")
-        # policy = value_iteration(mdp)
+        V, policy, policies, V_values = policy_iteration(mdp, max_iter=st.session_state.episodes, theta=theta)
+        st.session_state.policies = policies
+        st.session_state.algorithm = algorithm
+        st.session_state.V_values = V_values
+        last_episode = max(policies.keys())
+        st.session_state.last_policy = policy
 
     elif algorithm == "Policy Iteration":
         st.write("Running Policy Iteration...")
-        # policy = policy_iteration(mdp)
+        V, policy, policies, V_values = policy_iteration(mdp, max_iter=st.session_state.episodes)
+        st.session_state.policies = policies
+        st.session_state.algorithm = algorithm
+        st.session_state.V_values = V_values
+        last_episode = max(policies.keys())
+        st.session_state.last_policy = policy
+
+
     st.success("Algorithm finished.")
 
 # Legend
@@ -175,32 +221,73 @@ grid, start_pos, packages, storages = parse_layout(
 # ── Validate & MDP summary ───────────────────────────────────────────────
 st.markdown("**MDP Summary:**")
 
-with st.container():
-    st.markdown("### 📊 Training Results")
 
-    if st.session_state.algorithm is None:
-        st.info("Run an algorithm to see results.")
+st.markdown("### 📊 Training Results")
 
-    else:
-        if "rewards" in st.session_state:
+if st.session_state.algorithm is None:
+    st.info("Run an algorithm to see results.")
+
+else:
+
+    # ── TWO COLUMN LAYOUT ───────────────────────────────────────────────
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.session_state.algorithm == "Policy Iteration" or st.session_state.algorithm == "Value Iteration":
+
+            plot_mean_v_values(
+                V_values,
+                True)
+
+            plot_v_value_convergence(
+                st.session_state.algorithm,
+                V_values,
+                True)
+
+            plot_policy_rewards(st.session_state.algorithm,
+                                st.session_state.mdp,
+                                st.session_state.policies)
+
+        else:
             plot_rewards(
-            st.session_state.algorithm,
-            st.session_state.policies,
-            st.session_state.rewards
-        )
+                st.session_state.algorithm,
+                st.session_state.rewards,
+                plot_in_streamlit=True
+            )
+
+            plot_moving_average_rewards(
+                st.session_state.rewards,
+                100,
+                plot_in_streamlit=True
+            )
 
         plot_steps(
             st.session_state.algorithm,
+            st.session_state.mdp,
             st.session_state.policies,
-            st.session_state.rewards
+            plot_in_streamlit=True
         )
+
+    with col2:
 
         plot_success_rate(
+            st.session_state.algorithm,
             st.session_state.mdp,
-            st.session_state.policies
+            st.session_state.policies,
+            plot_in_streamlit=True
         )
 
-        plot_policy_changes()
+        plot_policy_changes(
+            st.session_state.policies,
+            plot_in_streamlit=True
+        )
+
+        plot_optimal_policy(
+            st.session_state.algorithm,
+            st.session_state.mdp,
+            st.session_state.last_policy,
+            plot_in_streamlit=True
+        )
 
 
 errors = []
