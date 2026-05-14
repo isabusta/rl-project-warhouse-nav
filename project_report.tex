@@ -73,7 +73,9 @@
   \begin{minipage}[t]{0.3\textwidth}
     \begin{flushright}
       \bf Spring 2022\\
-      FistName, LastName
+      Viola, Meier
+      Romano Brentani
+      Isabelle Bustamante
     \end{flushright}
   \end{minipage}
 
@@ -114,17 +116,64 @@
 
 
 \section{Introduction}
-% What is the problem, why does it matter, and what does this report do?
+Warehouse automation is an increasingly active area of research and industrial development, with a growing demand for fast, accurate and efficient order fufilment. Inefficient routing increases operational costs and reduces throughput. As warehouses grow in size, finding efficient strategies manually becomes impractical.
 
+We consider a warehouse robot that must pick up packages and deliver them to storage locations in the right order, while avoiding obstacles. This problem is modeled as a Markov Decision Process (MDP) \cite{sutton2018}. The state variable captures the robot's position, the remaining packages, and the locations of obstacles. Possible actions include movement steps and package pickup or delivering packages. The reward system incentivises fast and successful deliveries, while penalising collisions with walls. We implement and evaluate five approaches on a discrete grid warehouse: Q-Learning, SARSA, Value Iteration, Policy Iteration, and Deep Q-Network (DQN) \cite{mnih2015}.
 \subsection*{Related Work}
-% 2--3 relevant works and how they relate to this project. Cite with \cite{}.
+RL has been applied to warehouse robotics across a range of problem settings and scales \cite{punukollu2019integrating, peyas2021warehouse, liu2025drmarl}. A common observation is that warehouse environments are well-suited for RL because they are dynamic and unpredictable, which renders hand-crafted rules insufficient \cite{peyas2021warehouse}.
 
+At the algorithm level, prior work has explored DQN, PPO, and Advantage Actor-Critic for tasks such as route planning, object retrieval, and resource allocation \cite{punukollu2019integrating}. Peyas et al.\ \cite{peyas2021warehouse} use both Deep RL for navigation and Q-learning for product placement in a 2D grid, which is the same action space and environment structure we adopt. At industrial scale, Liu et al.\ \cite{liu2025drmarl} apply multi-agent RL to package sorting in Amazon warehouses and achieve an 80\% reduction in package recirculation under uncertain conditions.
+
+Two challenges appear across this work. Agents require many training episodes before convergence \cite{punukollu2019integrating}. Second, state spaces grow quickly as the problem scales: Peyas et al.\ \cite{peyas2021warehouse} acknowledge that extension to higher-dimensional, real-world environments remains unsolved. In our setting, each additional package doubles the number of states to experiment with higher-dimensional environments. We also test robustness by the addition of dynamic obstacles during execution.
 
 \section{Preliminaries}
 
 \subsection{MDP Formulation}
-% Define the MDP tuple $(\states, \actions, \transition, \reward, \discount)$ for this problem.
-% State the Bellman optimality equation and the definition of the optimal policy.
+
+The warehouse problem is formalised as a tuple $(\states, \actions, \transition, \reward, \discount)$.
+
+\paragraph{State space $\states$.}
+Each state is a tuple $s = (\text{pos},\, c,\, \mathbf{d})$, where:
+\begin{itemize}
+    \item $\text{pos} = (r, c) \in \mathcal{G}$ is the robot's position, with $\mathcal{G}$ the set of passable cells in the grid,
+    \item $c \in \{\emptyset, 0, 1, \ldots, N{-}1\}$ is the package currently carried ($\emptyset$ if none),
+    \item $\mathbf{d} \in \{0,1\}^N$ is a binary vector indicating which of the $N$ packages have been delivered.
+\end{itemize}
+States where a delivered package is still being carried are excluded. The total number of states grows as $|\mathcal{G}| \times (N+1) \times 2^N$.
+
+\paragraph{Action space $\actions$.}
+There are six actions: $\actions = \{\texttt{up},\, \texttt{down},\, \texttt{left},\, \texttt{right},\, \texttt{pickup},\, \texttt{deliver}\}$. Movement actions are always available; \texttt{pickup} is valid only when the robot stands on an undelivered package and carries nothing; \texttt{deliver} is valid only when the robot carries a package and stands on its designated storage cell.
+
+\paragraph{Transition function $\transition$.}
+The environment is deterministic: $\transition(s' \mid s, a) \in \{0, 1\}$ for all $s, a, s'$. Movement to a wall leaves the robot in place. Pickup and deliver actions update $c$ and $\mathbf{d}$ accordingly.
+
+\paragraph{Reward function $\reward$.}
+The reward $\reward(s, a)$ is defined as:
+\begin{equation}
+    \reward(s, a) =
+    \begin{cases}
+        -1   & \text{valid movement step} \\
+        -5   & \text{movement into a wall} \\
+        -10  & \text{invalid pickup or deliver} \\
+        +9   & \text{successful pickup } (+10 - 1) \\
+        +99  & \text{successful delivery } (+100 - 1)
+    \end{cases}
+\end{equation}
+
+\paragraph{Discount factor $\discount$.}
+We use $\discount = 0.95$, which encourages the agent to complete deliveries quickly.
+
+\paragraph{Bellman optimality equation.}
+The optimal state-value function $\optsval$ satisfies:
+\begin{equation}
+    \optsval(s) = \max_{a \in \actions} \left[ \reward(s,a) + \discount \sum_{s' \in \states} \transition(s' \mid s, a)\, \optsval(s') \right]
+\end{equation}
+
+\paragraph{Optimal policy.}
+The optimal policy selects the action that maximises the expected return in every state:
+\begin{equation}
+    \policy^*(s) = \arg\max_{a \in \actions} \left[ \reward(s,a) + \discount \sum_{s' \in \states} \transition(s' \mid s, a)\, \optsval(s') \right]
+\end{equation}
 
 
 \section{Environment}
@@ -186,10 +235,10 @@
 
 
 \section*{Use of External Aids}
-% List every book, paper, URL, library, and AI tool used. Highlight AI-assisted text with \aitxt{}.
+% List every book, paper, URL, library, and AI tool used. Highlight AI-assisted text with .
 
 
-\bibliographystyle{alpha}
+\bibliographystyle{plain}
 \bibliography{references}
 
 
