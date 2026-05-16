@@ -317,23 +317,261 @@ Results remained unstable. With new params result are even worse.
 
 \section{Experiments}
 
+This section presents the conducted experiments. 
+First, the research hypotheses are introduced. 
+Next, the experimental setups are described in detail, followed by a presentation of the results and a final discussion.
+
+In this project, the following Reinforcement Learning algorithms are applied to the environment described above:
+
+\begin{itemize}
+    \item Q-Learning
+    \item SARSA
+    \item Value Iteration
+    \item Policy Iteration
+    \item Deep Q-Learning (DQN)
+\end{itemize}
+
+The Experiments for Value Iteration and Policy Iteration will be provided in the final version of this paper. They are not present in the current draft paper. 
+
 \subsection{Hypotheses}
 % List the specific questions the experiments aim to answer.
 
+The goal of the experiments is to compare the performance and learning behavior of different Reinforcement Learning algorithms in the warehouse environment described in section \ref{sec:mdp}, MDP. 
+We investigate differences between model-based and model-free approaches as well as tabular and deep learning methods.
+
+We formulate the following hypotheses:
+
+\begin{itemize}
+    \item Model-based algorithms, such as Value Iteration and Policy Iteration, converge faster since they exploit full knowledge of the environment dynamics.
+    
+    \item Model-free algorithms, namely Q-Learning and SARSA, require more interaction with the environment but are able to learn effective policies without access to the transition model.
+    
+    \item Q-Learning is expected to achieve higher final performance than SARSA due to its off-policy learning strategy.
+
+    \item SARSA is expected to required more iterations to find a optimal policy
+    
+    \item Deep Q-Learning is expected to scale better to larger state spaces but requires more training episodes to achieve stable performance.
+
+    \item Higher learning rates ($\alpha$) lead to faster initial learning but may result in unstable convergence, whereas lower values produce more stable but slower learning behavior.
+
+    \item Higher exploration rates ($\epsilon$) improve state-space exploration but slow convergence, while lower values may lead to suboptimal policies due to insufficient exploration. In this work, the exploration rate decays over time and is bounded by a minimum value of $\epsilon_{\min} = 0.01$, ensuring a small amount of continued exploration even in later training stages.
+\end{itemize}
+
 \subsection{Setup}
+In order to conduct different experiments in a flexible manner, a graphical MDP configurator was implemented. 
+It allows the configuration of both the environment and the hyperparameters of the reinforcement learning algorithms.
+
+\subsubsection{MDP}
+The warehouse environment can be fully defined using the configurator. Users can specify the warehouse size (number of rows and columns), the locations of packages, and the locations of storage areas. It is also possible to add obstacles to the environment. Additionally, the following hyperparameters can be configured:
+
+\begin{itemize}
+    \item Discount factor $\gamma$, where $0.01 \leq \gamma \leq 1$
+    
+    \item Number of episodes for Q-Learning and SARSA, as well as the number of iterations for Value Iteration and Policy Iteration
+\end{itemize}
+
+For both SARSA and online Q-Learning, the following additional hyperparameters can be configured:
+
+\begin{itemize}
+    \item $\epsilon$, which defines the $\epsilon$-greedy exploration strategy ($0.01 \leq \epsilon \leq 1$)
+    
+    \item $\alpha$, the learning rate of the algorithms ($0.01 \leq \alpha \leq 1$)
+\end{itemize}
+
+For both Value Iteration and Policy Itertation the warehouse configurator allows to determine $\theta$ which controls when we consider the algorithms to have converged.
+
 % Environment variant(s), number of runs, random seeds, evaluation metric, baselines.
+\subsubsection{Q-Learning}
+In this work, several experiments were conducted using the Q-Learning algorithm in order to evaluate the influence of different hyperparameter settings on the learning performance and convergence behavior.
+
+First, the learning rate $\alpha$ was varied between $\alpha = 0.1$ and $\alpha = 0.01$ to analyze the effect of faster versus more conservative value updates. Second, different exploration strategies were investigated by varying the $\epsilon$ parameter of the $\epsilon$-greedy policy. In addition to a high-exploration setting ($\epsilon = 0.9$) and a moderately high-exploration setting ($\epsilon = 0.75$), a lower exploration baseline ($\epsilon = 0.1$) was included to provide a more exploitation-oriented comparison. The discount factor $\gamma$ was set to 0.99.
+
+Finally, an $\epsilon$-decay strategy was evaluated, starting from an initial value of $\epsilon = 0.9$ and gradually decreasing it over time using a decay factor of $0.99$. The decay was applied until a minimum value of $\epsilon_{\min} = 0.01$ was reached. This approach enables a transition from exploration in the early training phase to exploitation in later episodes. In all Experiments the environment size is a 8 x 8 grid space with two packages and two storages. 
+Table \ref{tab:qlearning_experiments} summarizes the example experiments.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Experiment} & \textbf{Learning Rate $\alpha$} & \textbf{Initial $\epsilon$} & \textbf{Notes} \\
+\hline
+1 & 0.1  & 0.9  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+2 & 0.1  & 0.1  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+3 & 0.01 & 0.9  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+4 & 0.01 & 0.1  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+5 & 0.1  & 0.5  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+\hline
+\end{tabular}
+\caption{Q-Learning experiments with different learning rates and initial exploration values. The discount factor was fixed to $\gamma = 0.99$ for all experiments.}
+\label{tab:qlearning_experiments}
+\end{table}
+
+
+\subsubsection{SARSA}
+In this work, the SARSA algorithm was evaluated using the same experimental setup as Q-Learning in order to enable a direct comparison between on-policy and off-policy learning methods. Several experiments were conducted to analyze the influence of different hyperparameter settings on learning performance and stability. In particular, the learning rate $\alpha$ and the exploration parameter $\epsilon$ were varied. The learning rate $\alpha$ was tested with values of $\alpha = 0.1$ and $\alpha = 0.01$ to compare faster versus more conservative updates of the action-value function. To investigate the effect of exploration, different initial values for the $\epsilon$-greedy policy were used, namely $\epsilon = 0.9$, $\epsilon = 0.75$, and $\epsilon = 0.1$. The discount factor $\gamma$ was set to 0.99. These settings allow the analysis of highly exploratory versus more exploitation-oriented behavior.
+
+In all experiments, an $\epsilon$-decay strategy was applied with a decay factor of $0.99$, reducing $\epsilon$ gradually over time until a minimum value of $\epsilon_{\min} = 0.01$ was reached. This ensures a transition from exploration in the early training phase to exploitation in later episodes. In all Experiments the environment size is again a 8 x 8 grid space with two packages and two storages. Table \ref{tab:sarsa_experiments} shows the example experiments.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Experiment} & \textbf{Learning Rate $\alpha$} & \textbf{Initial $\epsilon$} & \textbf{Notes} \\
+\hline
+1 & 0.1  & 0.9  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+2 & 0.1  & 0.1  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+3 & 0.01 & 0.9  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+4 & 0.1  & 0.75 & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+5 & 0.01 & 0.1  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+\hline
+\end{tabular}
+\caption{SARSA experiments with different learning rates and initial exploration values. The discount factor was fixed to $\gamma = 0.99$ for all experiments.}
+\label{tab:sarsa_experiments}
+\end{table}
+
+\subsubsection{MDP}
+The MDP for the experiments with Q-Learning and SARSA as described above was configures as follows:
+\begin{itemize}
+    \item Grid sisze: 8 x 8 
+    \item Number Packages: 2
+    \item Number storages: 2
+\end{itemize}
+Figure \ref{fig:warehouse_env_experiments} shows the initialized warehouse environment.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/warehouse_for_experiments.png}
+    \caption{Warehouse Environment used for the experiments}
+    \label{fig:warehouse_env_experiments}
+\end{figure}
 
 \subsection{Results}
+As for this draft paper, in the following section we will only provide the results for the first experiments in table \ref{tab:qlearning_experiments} and table \ref{tab:sarsa_experiments}. Figure \ref{fig:q_learning_res} shows the results for the first experiment for Q-Learning from table \ref{tab:qlearning_experiments}.
+
+\subsubsection{Q-Learning}
+
+
+\begin{figure}[H]
+\centering
+
+% -------- Row 1 --------
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/mean_reward_q_learning.png}
+    \caption{Q-Learning: Mean rewards}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/number_steps_q_learning.png}
+    \caption{Q-Learning: Number steps}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/sucess_rate_q_learning.png}
+    \caption{Q-Learning success rate}
+\end{subfigure}
+
+\vspace{0.5cm}
+
+% -------- Row 2 --------
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/policy_evaluation_q_learning.png}
+    \caption{Policy convergence}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/policy_stability_q_learning.png}
+    \caption{Q-Learning: Poplicy stability}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/optimal_policy_q_learning.png}
+    \caption{Q-Learning: Optimal policy}
+\end{subfigure}
+
+\caption{Results for experiment 1 for Q-Learning}
+\label{fig:q_learning_res}
+\end{figure}
+
 % Learning curves and/or tables. Figure: reward vs.\ episode.
 
+\subsubsection{SARSA}
+
+
+\begin{figure}[H]
+\centering
+
+% -------- Row 1 --------
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/mean_rewards_sarsa.png}
+    \caption{SARSA: Mean rewards}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/number_steps_sarsa.png}
+    \caption{SARSA: Number steps}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/success_rate_sarsa.png}
+    \caption{Q-Learning success rate}
+\end{subfigure}
+
+\vspace{0.5cm}
+
+% -------- Row 2 --------
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/policy_value_convergence_sarsa.png}
+    \caption{SARSA: Policy convergence}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/policy_stability_q_learning.png}
+    \caption{SARSA: Policy Stability}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/optimal_policy_q_learning.png}
+    \caption{SARSA: Optimal policy}
+\end{subfigure}
+
+\caption{Results for experiment 1 for SARSA}
+\label{fig:sarsa_res}
+\end{figure}
+
 \subsection{Discussion}
+
+In the first experiment, both Q-Learning and SARSA exhibited very similar learning behaviour. The convergence speed, cumulative reward development, and overall policy quality were nearly identical during most of the training process.
+
+This similarity can be explained by the chosen hyperparameter configuration. A relatively high initial exploration rate ($\epsilon = 0.9$) caused both algorithms to explore the environment extensively during early episodes. Under strong exploration, the difference between the off-policy update of Q-Learning and the on-policy update of SARSA becomes less pronounced, since both algorithms frequently execute exploratory actions rather than strictly greedy ones.
+
+Additionally, the shared discount factor ($\gamma = 0.99$) and identical learning rate ensured comparable value propagation across states. Because the environment dynamics remained stable during this experiment, both algorithms were able to learn similar value estimates and consequently converged towards comparable policies.
+
+Only minor differences may appear in later stages of learning, where SARSA tends to learn slightly safer policies due to its on-policy nature, while Q-Learning optimizes toward the greedy target policy. However, under the given experimental conditions, these theoretical differences had limited practical impact.
 % Interpret the results. What explains the observed behaviour?
 
 
 \section{Robustness}
 
+To evaluate the robustness of the reinforcement learning algorithms, multiple runs with different random seeds were conducted for each hyperparameter configuration. This allows assessing the sensitivity of Q-Learning and SARSA to stochastic initialization and exploration behavior.
+
 \subsection{Robustness Analysis}
-% Dimensions tested: stochasticity, unseen layouts, reward perturbations, hyperparameter sensitivity.
+Robustness is measured in terms of convergence stability, variance in cumulative rewards, success rate of reaching the goal state, and policy change rate over time. For each configuration, multiple episodes were executed under identical environmental settings, while only the random seed was varied.
+
+Additionally, both algorithms were evaluated under the same hyperparameter settings in order to ensure a fair comparison between on-policy (SARSA) and off-policy (Q-Learning) learning behavior.
+
+To further analyze robustness under non-stationary conditions, an additional experiment was introduced in which random obstacles were dynamically added to the environment during the learning process. This simulates unexpected changes in the environment structure and allows evaluating how quickly the agents adapt and recover their performance after such perturbations. The comparison focuses on the resilience of Q-Learning and SARSA with respect to sudden changes in the state space and optimal policy.
 
 \subsection{Results}
 % Table: performance under each condition. Discuss what the policy tolerates and where it breaks.
