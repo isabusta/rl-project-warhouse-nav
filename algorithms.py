@@ -34,7 +34,7 @@ def q_learning(mdp: WarehouseMDP,
                n_episodes=3000,
                max_steps=100,
                alpha=0.1,
-               epsilon=1.0,
+               epsilon=0.9,
                epsilon_decay=0.995,
                min_epsilon=0.01,
                add_rand_obstacle = False):
@@ -101,7 +101,14 @@ def q_learning(mdp: WarehouseMDP,
 
     return Q, rewards_per_episode, policies, added_obstacles
 
-def sarsa(mdp: WarehouseMDP, epsilon = 0.1, alpha = 0.1, episodes=3000, max_iter=100, add_rand_obstacle=False):
+def sarsa(mdp: WarehouseMDP,
+          epsilon = 0.1,
+          alpha = 0.1,
+          episodes=3000,
+          max_iter=100,
+          epsilon_decay=0.995,
+          min_epsilon=0.01,
+          add_rand_obstacle=False):
     gamma = mdp.gamma
     Q = np.zeros((mdp.n_states, mdp.n_actions))
 
@@ -145,6 +152,7 @@ def sarsa(mdp: WarehouseMDP, epsilon = 0.1, alpha = 0.1, episodes=3000, max_iter
 
         policies[episode] = np.argmax(Q, axis=1)
         rewards_per_episode.append(total_reward)
+        epsilon = max(min_epsilon, epsilon * epsilon_decay)
 
         if episode in [500, 1000, 2000] and add_rand_obstacle:
             loc = mdp.add_random_obstacle()
@@ -206,13 +214,20 @@ def policy_evaluation(mdp, policy, theta=1e-4, max_iter=1000):
     V = np.zeros(mdp.n_states)
     s_idx = np.arange(mdp.n_states)
 
+    V_history = [V.copy()]
+
     for _ in range(max_iter):
+
         V_new = mdp.R[s_idx, policy] + mdp.gamma * (mdp.P[s_idx, policy] * V).sum(axis=1)
+
+        V_history.append(V_new.copy())
+
         if np.max(np.abs(V_new - V)) < theta:
             break
+
         V = V_new
 
-    return V
+    return V, np.array(V_history)
 
 
 def policy_iteration(mdp, theta=1e-4, max_iter=100):

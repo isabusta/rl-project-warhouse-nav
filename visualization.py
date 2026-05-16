@@ -2,6 +2,7 @@ import matplotlib.animation as animation
 import numpy as np
 from IPython.core.pylabtools import figsize
 
+from algorithms import policy_evaluation
 from mdp import WarehouseMDP, ACTION_NAMES
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -116,16 +117,19 @@ def plot_moving_average_rewards(rewards, window=50, plot_in_streamlit=False):
         plt.show()
 
 # plot a line how the reward changes over the episodes
-def plot_rewards(algorithm, rewards, plot_in_streamlit=False):
+def plot_rewards(algorithm, rewards, running_mean = None, plot_in_streamlit=False):
 
     episodes = len(rewards)
 
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.plot(np.arange(episodes), rewards)
+    ax.plot(np.arange(episodes), rewards, label=f"Total rewards for {algorithm}")
+    if running_mean is not None:
+        ax.plot(np.arange(episodes), running_mean, label=f"Mean Rewards per episode for {algorithm}")
 
     ax.set_title(f"{algorithm} | Total Rewards per Episode")
     ax.set_xlabel("Episode")
     ax.set_ylabel("Total Reward")
+    ax.legend()
 
     if plot_in_streamlit:
         st.pyplot(fig)
@@ -146,6 +150,7 @@ def plot_mean_rewards(algorithm, rewards, N=50, plot_in_streamlit=False):
     ax.set_title(f"{algorithm} | Mean Rewards per Episode")
     ax.set_xlabel("Episode")
     ax.set_ylabel("Mean Reward")
+    ax.set_ylim(-100, 200)
 
     if plot_in_streamlit:
         st.pyplot(fig)
@@ -156,11 +161,12 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies, plot_in_streamlit=Fa
 
     steps = []
     # max number of steps
-    max_steps = mdp.nrows * mdp.ncols
+    max_steps = mdp.nrows * mdp.ncols + 10
     start_state = mdp.reset()
 
     # compute number of steps to reach goal
     for policy in policies.values():
+        start_state = mdp.reset()
         _, n_steps, _ = follow_policy(mdp, policy, start_state=start_state)
         steps.append(n_steps)
 
@@ -168,13 +174,13 @@ def plot_steps(algorithm: str, mdp: WarehouseMDP, policies, plot_in_streamlit=Fa
 
     episodes = np.arange(len(policies))
 
-    ax.plot(episodes, steps)
+    ax.plot(episodes, steps, marker="o", label="Steps")
 
     ax.set_title(f"{algorithm} | Steps per Episode")
     ax.set_xlabel("Episode")
     ax.set_ylabel("Steps until goal")
 
-    ax.set_yticks(np.arange(max_steps, step=2))
+    ax.set_yticks(np.arange(0, max_steps + 1, max(1, max_steps // 10)))
 
     ax.grid(True)
 
@@ -259,7 +265,7 @@ def follow_policy(mdp: WarehouseMDP, policy, start_state):
 
     path_states = [start_state]
     state = start_state
-    steps = mdp.nrows * mdp.ncols
+    steps = mdp.nrows * mdp.ncols + 10
     done = False
     total_reward = 0
 
@@ -278,7 +284,6 @@ def plot_optimal_policy(algorithm: str, mdp: WarehouseMDP, policy, plot_in_strea
 
     start_state = mdp.reset()
     path_states, _, _ = follow_policy(mdp, policy, start_state)
-    print(path_states)
 
     # 2. Plot Setup
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -411,7 +416,10 @@ def plot_policy_rewards(algorithm, mdp, policies):
 
         rewards.append(total_reward)
 
-    plot_rewards(algorithm, rewards, plot_in_streamlit=True)
+    running_mean = np.cumsum(rewards) / np.arange(1, len(rewards) + 1)
+
+    plot_rewards(algorithm, rewards, running_mean, plot_in_streamlit=True)
+
 
 
 def plot_values(V, plot_in_streamlit=False):
@@ -460,3 +468,24 @@ def plot_value_heatmap(V):
     plt.title("Value Function Heatmap")
 
     plt.show()
+
+def plot_policy_evaluation(algorithm: str, mdp, policy, theta=1e-4, max_iter = 1000, plot_in_streamlit=False):
+
+    V, V_history = policy_evaluation(mdp, policy, theta, max_iter)
+
+    iterations = np.arange(len(V_history))
+
+    fig = plt.figure(figsize=(5, 5))
+
+    for s in range(V_history.shape[1]):
+        plt.plot(iterations, V_history[:, s], alpha=0.7)
+
+    plt.xlabel("Iteration")
+    plt.ylabel("V(s)")
+    plt.title(f"Policy Evaluation Convergence for {algorithm}")
+    plt.grid(True)
+
+    if plot_in_streamlit:
+        st.pyplot(fig)
+    else:
+        plt.show()

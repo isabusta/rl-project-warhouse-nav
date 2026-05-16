@@ -5,7 +5,7 @@ from algorithms import q_learning, sarsa, policy_iteration
 from mdp import WarehouseMDP
 from visualization import visualize_learning, plot_rewards, plot_steps, plot_success_rate, plot_policy_changes, \
     plot_moving_average_rewards, plot_optimal_policy, plot_mean_v_values, plot_v_value_convergence, plot_policy_rewards, \
-    plot_mean_rewards
+    plot_mean_rewards, plot_policy_evaluation
 
 st.session_state.algorithm = None
 
@@ -78,20 +78,26 @@ st.divider()
 
 st.subheader("Reinforcement Learning / Planning")
 
+gamma = st.number_input("Choose a discount factor for the MDP", 0.01, 1.0)
+st.session_state.gamma = gamma
+
 algorithm = st.selectbox(
     "Select algorithm",
     ["Q-Learning", "SARSA", "Value Iteration", "Policy Iteration"]
 )
 if algorithm == "Q-Learning" or algorithm == "SARSA":
-    epsilon = st.number_input("Choose epsilon fo the training", 0.0001, 0.99)
+    epsilon = st.number_input("Choose epsilon fo the training", 0.001, 1.0)
     st.session_state.epsilon = epsilon
     add_rand_obstacle = st.checkbox("Add random obstacles")
     st.session_state.add_rand_obstacle = add_rand_obstacle
-
+    alpha = st.number_input("Choose alpha for the training process", 0.001, 1.0)
+    st.session_state.alpha = alpha
+    epsilon_decay = st.number_input("Choose a Decay factor (0 < d < 0.99)", 0.1, 1.0)
+    st.session_state.epsilon_decay = epsilon_decay
 
 
 if algorithm == "Policy Iteration" or algorithm == "Value Iteration":
-    theta = st.number_input("Choose Theta", 0.0001, 1)
+    theta = st.number_input("Choose Theta", 0.0001, 1.0)
     st.session_state.theta = theta
 
 episodes = st.number_input("Choose number of episodes", 0, 10000, step=1)
@@ -103,6 +109,21 @@ if start_button and episodes > 0:
 
     st.info(f"Running: {algorithm}")
     mdp = st.session_state.mdp
+
+    if "epsilon_decay" in st.session_state:
+        epsilon_decay = st.session_state.epsilon_decay
+    else:
+        epsilon_decay = 0.995
+
+    if "alpha" not in st.session_state:
+        alpha = 0.1
+    else:
+        alpha = st.session_state.alpha
+
+    if "gamma" not in st.session_state:
+        gamma = 0.99
+    else:
+        st.session_state.mdp.gamma = st.session_state.gamma
 
     if "epsilon" not in st.session_state:
         epsilon = 0.1
@@ -122,7 +143,8 @@ if start_button and episodes > 0:
     # ── PLACEHOLDER DISPATCH ─────────────────────────────
     if algorithm == "Q-Learning":
         st.write("Running Q-Learning...")
-        Q, rewards, policies, _ = q_learning(st.session_state.mdp, n_episodes=st.session_state.episodes, epsilon=epsilon, add_rand_obstacle=add_rand_obstacle)
+        print("Gamma:", st.session_state.mdp.gamma)
+        Q, rewards, policies, _ = q_learning(st.session_state.mdp, alpha=alpha, n_episodes=st.session_state.episodes, epsilon=epsilon, epsilon_decay=epsilon_decay, add_rand_obstacle=add_rand_obstacle)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
@@ -132,7 +154,7 @@ if start_button and episodes > 0:
 
     elif algorithm == "SARSA":
         st.write("Running SARSA...")
-        Q, rewards, policies, _ = sarsa(st.session_state.mdp, episodes=st.session_state.episodes, epsilon=epsilon, add_rand_obstacle=add_rand_obstacle)
+        Q, rewards, policies, _ = sarsa(st.session_state.mdp, alpha=alpha, episodes=st.session_state.episodes, epsilon=epsilon, epsilon_decay=epsilon_decay, add_rand_obstacle=add_rand_obstacle)
         st.session_state.rewards = rewards
         st.session_state.policies = policies
         st.session_state.algorithm = algorithm
@@ -300,12 +322,18 @@ else:
         )
 
     with col3:
-        if algorithm == "Q-Learning" or "SARSA":
+        if st.session_state.algorithm == "Q-Learning" or st.session_state.algorithm == "SARSA":
             plot_mean_rewards(
                 st.session_state.algorithm,
                 st.session_state.rewards,
                 plot_in_streamlit=True
             )
+            if "theta" not in st.session_state:
+                theta = 1e-4
+            else:
+                theta = st.session_state.theta
+
+            plot_policy_evaluation(st.session_state.algorithm, st.session_state.mdp, st.session_state.last_policy, theta, episodes, True)
 
 
 
