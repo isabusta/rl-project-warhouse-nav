@@ -195,7 +195,121 @@ The optimal policy selects the action that maximises the expected return in ever
 
 \subsection{Deep Q-Network (DQN)}
 % Write the DQN loss function. Mention replay buffer and target network.
+\paragraph{State Encoding}
 
+Initial state representation:
+\[
+s = (\textit{robot\_pos}, \textit{carrying}, \textit{delivered})
+\]
+where
+\[
+\textit{robot\_pos} = (row, col),
+\]
+\[
+\textit{carrying} = i \Longleftrightarrow \textit{robot carries package } i,
+\]
+and
+\[
+\textit{delivered} = (0,\dots,1,\dots,0)
+\]
+with a value of 1 at position \(i\) if package \(i\) was successfully delivered.
+
+The carrying state was one-hot encoded and the complete state was passed to the network as a flattened vector.
+
+Results:
+\begin{itemize}
+    \item rewards remained strictly negative
+\end{itemize}
+
+Changed encoding to a grid-based representation.
+
+\paragraph{Grid-based State Encoding}
+
+The MDP was encoded as a multi-channel grid:
+
+\begin{itemize}
+    \item channel 0: obstacles (1 if wall at position)
+    \item channels 1..N: package start positions
+    \item channels N+1..2N: storage locations (0.5 if empty, 1 if delivered)
+    \item channel 2N+1: robot position
+    \item channels 2N+2..3N+1: carrying state (one channel per package)
+\end{itemize}
+
+Notes:
+\begin{itemize}
+    \item packages and storages may share the same cell
+    \item agent may occupy the same position as a package or storage
+    \item all channels are concatenated and passed to the network
+\end{itemize}
+
+Results remained poor.
+
+Added action masking:
+\begin{itemize}
+    \item invalid pickup and delivery actions masked
+\end{itemize}
+
+Worked temporarily:
+
+\begin{figure}[h!]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_working.png}}
+    \caption{
+      Historical locations and number of accepted papers for International
+      Machine Learning Conferences (ICML 1993 -- ICML 2008) and International
+      Workshops on Machine Learning (ML 1988 -- ML 1992). At the time this
+      figure was produced, the number of accepted papers for ICML 2008 was
+      unknown and instead estimated.
+    }
+    \label{fig:deep-q}
+  \end{center}
+\end{figure}
+
+Training became unstable again using the same setup:
+
+\begin{figure}[h!]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards.png}}
+    \caption{
+      Historical locations and number of accepted papers for International
+      Machine Learning Conferences (ICML 1993 -- ICML 2008) and International
+      Workshops on Machine Learning (ML 1988 -- ML 1992). At the time this
+      figure was produced, the number of accepted papers for ICML 2008 was
+      unknown and instead estimated.
+    }
+    \label{fig:deep-q}
+  \end{center}
+\end{figure}
+
+Observations:
+\begin{itemize}
+    \item successful delivery never occurred
+    \item rewards dropped again during training
+\end{itemize}
+
+Changed hyperparameters:
+
+\begin{table}[]
+\begin{tabular}{|l|l|l|}
+\hline
+                  & First Training                          & Second Training                         \\ \hline
+GAMMA             & 0.99                                    & 0.99                                    \\ \hline
+Learning Rate     & 0.001, exp annealed to 0.0001 & 0.001, exp annealed to 0.0001 \\ \hline
+EPS\_START        & 0.9                                     & 0.9                                     \\ \hline
+EPS\_END          & 0.001                                   & 0.001                                   \\ \hline
+EPS\_DECAY        & 1000                                    & 10000                                   \\ \hline
+TAU               & 0.005                                   & 0.005                                   \\ \hline
+SOFT\_UPDATE      & 0.01                                    & 0.001                                   \\ \hline
+NUM\_TRAJECTORIES & 10000                                   & 10000                                   \\ \hline
+MAX\_EPS\_LENGTH  & 500                                     & 100                                     \\ \hline
+WARMUP            & 1500                                    & 3000                                    \\ \hline
+BATCH\_SIZE       & 128                                     & 128                                     \\ \hline
+\end{tabular}
+\end{table}
+
+Results remained unstable.
 
 \subsection{Hyperparameters}
 % Table: learning rate, discount factor, exploration schedule, episodes, and DQN-specific params.
