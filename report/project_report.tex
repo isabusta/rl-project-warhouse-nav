@@ -538,17 +538,61 @@ Only minor differences may appear in later stages of learning, where SARSA tends
 
 \section{Robustness}
 
-To evaluate the robustness of the reinforcement learning algorithms, multiple runs with different random seeds were conducted for each hyperparameter configuration. This allows assessing the sensitivity of Q-Learning and SARSA to stochastic initialization and exploration behavior.
+This section presents a preliminary robustness evaluation of the reinforcement learning algorithms as part of the draft version of this paper. The experiments reported here provide an initial analysis of algorithm stability and sensitivity, while additional robustness experiments and extended evaluations will be included in future iterations of this work.
+
+To evaluate the robustness of the reinforcement learning algorithms, multiple runs with different random seeds were conducted for each hyperparameter configuration. This allows assessing the sensitivity of Q-Learning and SARSA to stochastic initialization and exploration behaviour.
 
 \subsection{Robustness Analysis}
-Robustness is measured in terms of convergence stability, variance in cumulative rewards, success rate of reaching the goal state, and policy change rate over time. For each configuration, multiple episodes were executed under identical environmental settings, while only the random seed was varied.
 
-Additionally, both algorithms were evaluated under the same hyperparameter settings in order to ensure a fair comparison between on-policy (SARSA) and off-policy (Q-Learning) learning behavior.
+Robustness was evaluated based on convergence stability, variance in cumulative rewards, success rate, and policy changes over time. For each configuration, several runs were performed under identical environmental conditions while varying only the random seed.
 
-To further analyze robustness under non-stationary conditions, an additional experiment was introduced in which random obstacles were dynamically added to the environment during the learning process. This simulates unexpected changes in the environment structure and allows evaluating how quickly the agents adapt and recover their performance after such perturbations. The comparison focuses on the resilience of Q-Learning and SARSA with respect to sudden changes in the state space and optimal policy.
+Additionally, selected hyperparameters were modified to analyze how robustly the algorithms respond to changing learning conditions. Both Q-Learning and SARSA were evaluated using identical experimental settings to ensure a fair comparison between off-policy and on-policy learning.
+
+To further investigate robustness in non-stationary environments, random obstacles were dynamically introduced during training. This setup simulates unexpected environmental changes and allows evaluating how quickly the agents adapt and recover their performance after such perturbations.
 
 \subsection{Results}
-% Table: performance under each condition. Discuss what the policy tolerates and where it breaks.
+
+To analyze robustness with respect to hyperparameter variations, the learning rate was increased beyond the standard configurations. In particular, Experiment 6 from Table~\ref{tab:qlearning_experiments} was repeated using a higher learning rate of $\alpha = 0.5$.
+
+For $\alpha = 0.5$, Q-Learning demonstrated strong robustness and adapted well to the increased update magnitude. As shown in Figure~\ref{fig:q_learning_res_high_alpha}, the algorithm converged faster compared to lower learning rates while maintaining stable policy behaviour. The success rate increased rapidly, and the policy stability results indicate consistent convergence toward a reliable solution.
+
+These findings suggest that moderately increasing the learning rate can accelerate learning without compromising stability. The results illustrated in Figure~\ref{fig:q_learning_res_high_alpha} therefore indicate that Q-Learning tolerates moderate hyperparameter changes well and maintains stable performance under altered learning conditions.
+
+\begin{figure}[H]
+\centering
+% -------- Row 1 --------
+\begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/q_learning_sucess_rate_high_lr.png}
+    \caption{Q-Learning: Mean rewards}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/q_learning_high_lr_policy_stability.png}
+    \caption{Q-Learning: Policy Stability}
+\end{subfigure}
+
+\vspace{0.5cm}
+
+% -------- Row 2 --------
+
+\begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/q_learning_rewards_high_lr.png}
+    \caption{Q-Learning: Success rate}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/q_learning_high_lr_optimal_policy.png}
+    \caption{Q-Learning: Optimal Policy}
+\end{subfigure}
+
+\caption{Q-Learning: Robustness Test for high $\alpha$ = 0.5}
+\label{fig:q_learning_res_high_alpha}
+\end{figure}
+
 
 
 \section{Conclusion}
