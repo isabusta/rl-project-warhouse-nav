@@ -333,7 +333,7 @@ We formulate the following hypotheses:
 In order to conduct different experiments in a flexible manner, a graphical MDP configurator was implemented. 
 It allows the configuration of both the environment and the hyperparameters of the reinforcement learning algorithms.
 
-\subsubsection{MDP}
+\subsubsection{MDP Setup}
 The warehouse environment can be fully defined using the configurator. Users can specify the warehouse size (number of rows and columns), the locations of packages, and the locations of storage areas. It is also possible to add obstacles to the environment. Additionally, the following hyperparameters can be configured:
 
 \begin{itemize}
@@ -372,6 +372,7 @@ Table \ref{tab:qlearning_experiments} summarizes the example experiments.
 3 & 0.01 & 0.9  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
 4 & 0.01 & 0.1  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
 5 & 0.1  & 0.5  & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
+6 & 0.5 & 0.1 & $\epsilon$-decay (decay rate $d = 0.99$, $\epsilon_{\min} = 0.01$) \\
 \hline
 \end{tabular}
 \caption{Q-Learning experiments with different learning rates and initial exploration values. The discount factor was fixed to $\gamma = 0.99$ for all experiments.}
@@ -401,7 +402,7 @@ In all experiments, an $\epsilon$-decay strategy was applied with a decay factor
 \label{tab:sarsa_experiments}
 \end{table}
 
-\subsubsection{MDP}
+\subsubsection{Q-Learning and SARSA - MDP Experiment Setup}
 The MDP for the experiments with Q-Learning and SARSA as described above was configures as follows:
 \begin{itemize}
     \item Grid sisze: 8 x 8 
@@ -521,8 +522,6 @@ As for this draft paper, in the following section we will only provide the resul
 \caption{Results for experiment 1 for SARSA}
 \label{fig:sarsa_res}
 \end{figure}
-
-
 
 \subsection{Discussion}
 
