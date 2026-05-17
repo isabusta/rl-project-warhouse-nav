@@ -525,14 +525,15 @@ As for this draft paper, in the following section we will only provide the resul
 
 \subsection{Discussion}
 
-In the first experiment, both Q-Learning and SARSA exhibited very similar learning behaviour. The convergence speed, cumulative reward development, and overall policy quality were nearly identical during most of the training process.
+In the first experiment, Q-Learning and SARSA demonstrated highly similar learning behaviour, showing comparable convergence speed, cumulative reward progression, and final policy performance.
 
-This similarity can be explained by the chosen hyperparameter configuration. A relatively high initial exploration rate ($\epsilon = 0.9$) caused both algorithms to explore the environment extensively during early episodes. Under strong exploration, the difference between the off-policy update of Q-Learning and the on-policy update of SARSA becomes less pronounced, since both algorithms frequently execute exploratory actions rather than strictly greedy ones.
+This observation can largely be attributed to the chosen hyperparameter configuration. The high initial exploration rate ($\epsilon = 0.9$) led both agents to select exploratory actions frequently during the early stages of training. Under such strong exploration, the practical difference between Q-Learning's off-policy updates and SARSA's on-policy may become less significant, since action selection is dominated by random exploration rather than greedy exploitation.
 
-Additionally, the shared discount factor ($\gamma = 0.99$) and identical learning rate ensured comparable value propagation across states. Because the environment dynamics remained stable during this experiment, both algorithms were able to learn similar value estimates and consequently converged towards comparable policies.
+Furthermore, the identical learning rate and discount factor ($\gamma = 0.99$) resulted in similar value propagation dynamics across both algorithms. In a stationary environment without structural changes, both methods were therefore exposed to nearly identical state–action distributions, leading to closely aligned value estimates and policies.
 
-Only minor differences may appear in later stages of learning, where SARSA tends to learn slightly safer policies due to its on-policy nature, while Q-Learning optimizes toward the greedy target policy. However, under the given experimental conditions, these theoretical differences had limited practical impact.
-% Interpret the results. What explains the observed behaviour?
+The results indicate that algorithmic differences between on-policy and off-policy learning become most visible when exploration decreases or when the environment introduces higher uncertainty or risk. Under the highly exploratory conditions of this experiment, however, both algorithms effectively approximated similar learning processes, explaining the nearly indistinguishable empirical performance.
+
+Overall, the experiment highlights that hyperparameter choices—particularly the exploration rate—can have a stronger influence on observed behaviour than the theoretical differences between Q-Learning and SARSA themselves.
 
 
 \section{Robustness}
