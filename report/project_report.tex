@@ -202,10 +202,8 @@ The network consists of three linear layers.
 Transitions for updating the network are sampled from a replay buffer.
 Actions are selected according to the $\varepsilon$-greedy principle: with probability 
 $\varepsilon$ a random action is chosen (exploration), and with probability $1-\varepsilon$ 
-the action with the highest Q-value is selected (exploitation). $\varepsilon$ starts at $0.9$ 
-and is exponentially decayed to $0.01$ during training. The target network is updated via 
-soft update with $\tau = 0.001$. 
-The learning rate is initialized with $0.001$ and reduced by a factor of $\gamma$ using a MulitStepRL scheduler. As a basis for the implementation we used Lab 8 and the 
+the action with the highest Q-value is selected (exploitation).
+ As a basis for the implementation we used Lab 8 and the 
 PyTorch documentation.
 Detailed number in table \ref{tab:dqn-params}
 
@@ -242,32 +240,6 @@ Results remained negative.
 \paragraph{Action Masking}
 % TODO: describe action masking
 
-\subsubsection{Results}
-
-Table~\ref{tab:dqn-params} shows the hyperparameters used across training runs.
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{|l|l|l|}
-\hline
-                      & \textbf{Run 1}                  & \textbf{Run 2}                  \\ \hline
-GAMMA                 & 0.99                            & 0.95                            \\ \hline
-LR         &  & $3\times10^{-4}$, milestones [6000, 8000], $\gamma=0.5$ \\ \hline
-EPS\_START            & 0.9                             & 0.9                             \\ \hline
-EPS\_END              & 0.01                           & 0.01                           \\ \hline
-EPS\_DECAY            & 1000                            & 200000                           \\ \hline
-TAU                   & 0.005                           & 0.005                           \\ \hline
-SOFT\_UPDATE          & 0.01                            & 0.001                           \\ \hline
-NUM\_TRAJECTORIES     & 10000                           & 10000                           \\ \hline
-MAX\_EPISODE\_LENGTH  & 500                             & 100                             \\ \hline
-WARMUP                & 1500                            & 10000                            \\
-\hline
-Replay Buffer           & 10000                             & 20000                             \\ \hline
-BATCH\_SIZE           & 128                             & 128                             \\ \hline
-\end{tabular}
-\caption{Hyperparameters across DQN training runs.}
-\label{tab:dqn-params}
-\end{table}
 
 \begin{figure}[h!]
   \vskip 0.2in
@@ -522,6 +494,61 @@ As for this draft paper, in the following section we will only provide the resul
 \caption{Results for experiment 1 for SARSA}
 \label{fig:sarsa_res}
 \end{figure}
+
+\subsubsection{Deep Q-Learning}
+
+$\varepsilon$ starts at $0.9$ 
+and is exponentially decayed to $0.01$ during training. The target network is updated via 
+soft update with $\tau = 0.001$. 
+The learning rate is initialized with $0.001$ and reduced by a factor of $\gamma$ using a MulitStepRL scheduler.
+
+
+Table~\ref{tab:dqn-params} shows the hyperparameters used across training runs.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+                      & \textbf{Run 1}                  & \textbf{Run 2}                  \\ \hline
+GAMMA                 & 0.99                            & 0.95                            \\ \hline
+LR         &  & $3\times10^{-4}$, milestones [6000, 8000], $\gamma=0.5$ \\ \hline
+EPS\_START            & 0.9                             & 0.9                             \\ \hline
+EPS\_END              & 0.01                           & 0.01                           \\ \hline
+EPS\_DECAY            & 1000                            & 200000                           \\ \hline
+TAU                   & 0.005                           & 0.005                           \\ \hline
+SOFT\_UPDATE          & 0.01                            & 0.001                           \\ \hline
+NUM\_TRAJECTORIES     & 10000                           & 10000                           \\ \hline
+MAX\_EPISODE\_LENGTH  & 500                             & 100                             \\ \hline
+WARMUP                & 1500                            & 10000                            \\
+\hline
+Replay Buffer           & 10000                             & 20000                             \\ \hline
+BATCH\_SIZE           & 128                             & 128                             \\ \hline
+\end{tabular}
+\caption{Hyperparameters across DQN training runs.}
+\label{tab:dqn-params}
+\end{table}
+
+Results for 7 X 7 grid, 5 obstacles, 2 packages. Figure \ref{fig:dqn-run1} and \ref{fig:dqn-run2} show two different training results for same parameter and MDP. 
+\begin{figure}[H]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_delivered_2.png}}
+    \caption{DQN training — cumulative reward and deliveries per episode for 7 x 7 grid}
+    \label{fig:dqn-run1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[H]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_delivered.png}}
+    \caption{DQN training — cumulative reward and deliveries per episode 7 x 7 grid}
+    \label{fig:dqn-run2}
+  \end{center}
+\end{figure}
+
+Results for 5 x 5 grid, 3 obstacles, 2 packages. TODO: add results 
+
 
 \subsection{Discussion}
 
