@@ -196,126 +196,96 @@ The optimal policy selects the action that maximises the expected return in ever
 %
 
 \subsection{Deep Q-Network (DQN)}
-% Write the DQN loss function. Mention replay buffer and target network.
+
+We implemented a Deep Q-Network with a hidden dimension of 256 to approximate the Q-values. 
+The network consists of three linear layers.
+Transitions for updating the network are sampled from a replay buffer.
+Actions are selected according to the $\varepsilon$-greedy principle: with probability 
+$\varepsilon$ a random action is chosen (exploration), and with probability $1-\varepsilon$ 
+the action with the highest Q-value is selected (exploitation). $\varepsilon$ starts at $0.9$ 
+and is exponentially decayed to $0.01$ during training. The target network is updated via 
+soft update with $\tau = 0.001$. 
+The learning rate is initialized with $0.001$ and reduced by a factor of $\gamma$ using a MulitStepRL scheduler. As a basis for the implementation we used Lab 8 and the 
+PyTorch documentation.
+Detailed number in table \ref{tab:dqn-params}
+
 \paragraph{State Encoding}
+To feed the states to the network, we experimented with two different state encodings.
 
-Initial state representation:
-\[
-s = (\textit{robot\_pos}, \textit{carrying}, \textit{delivered})
-\]
-where
-\[
-\textit{robot\_pos} = (row, col),
-\]
-\[
-\textit{carrying} = i \Longleftrightarrow \textit{robot carries package } i,
-\]
-and
-\[
-\textit{delivered} = (0,\dots,1,\dots,0)
-\]
-with a value of 1 at position \(i\) if package \(i\) was successfully delivered.
+\subparagraph{Initial Encoding}
+The state was represented as a flat vector:
+\begin{equation}
+    s = (\textit{robot\_pos},\; \textit{carrying},\; \textit{delivered})
+\end{equation}
+where $\textit{robot\_pos} = (row, col)$, $\textit{carrying} = i$ if the robot carries 
+package $i$ (and $\textit{None}$ otherwise), and $\textit{delivered}_i = 1$ if package $i$ 
+has been delivered. The carrying state was one-hot encoded and the complete state was passed 
+to the network as a flattened vector. This encoding resulted in strictly negative rewards 
+throughout training.
 
-The carrying state was one-hot encoded and the complete state was passed to the network as a flattened vector.
-
-Results:
+\subparagraph{Grid-based Encoding}
+We switched to a multi-channel grid representation. Given $N$ packages, the state is encoded 
+as $(2 + 3N)$ channels of size $rows \times cols$:
 \begin{itemize}
-    \item rewards remained strictly negative
+    \item \textbf{Channel 0:} obstacle map — $1$ if a wall occupies position $(r, c)$
+    \item \textbf{Channels $1$\,..\,$N$:} package positions — $1$ at the start position of 
+          package $i$; set to $0$ once picked up or delivered
+    \item \textbf{Channels $N{+}1$\,..\,$2N$:} storage locations — $0.5$ if empty, $1.0$ 
+          if delivered
+    \item \textbf{Channel $2N{+}1$:} robot position — $1$ at the current position of the robot
+    \item \textbf{Channels $2N{+}2$\,..\,$3N{+}1$:} carrying state — channel $2N{+}2{+}i$ 
+          is set to $1$ everywhere if the robot is carrying package $i$
 \end{itemize}
+All channels are concatenated and flattened into a vector before being passed to the network. 
+Results remained negative.
 
-Changed encoding to a grid-based representation.
+\paragraph{Action Masking}
+% TODO: describe action masking
 
-\paragraph{Grid-based State Encoding}
+\subsubsection{Results}
 
-The MDP was encoded as a multi-channel grid:
+Table~\ref{tab:dqn-params} shows the hyperparameters used across training runs.
 
-\begin{itemize}
-    \item channel 0: obstacles (1 if wall at position)
-    \item channels 1..N: package start positions
-    \item channels N+1..2N: storage locations (0.5 if empty, 1 if delivered)
-    \item channel 2N+1: robot position
-    \item channels 2N+2..3N+1: carrying state (one channel per package)
-\end{itemize}
-
-Notes:
-\begin{itemize}
-    \item packages and storages may share the same cell
-    \item agent may occupy the same position as a package or storage
-    \item all channels are concatenated and passed to the network
-\end{itemize}
-
-Results remained poor.
-
-Added action masking:
-\begin{itemize}
-    \item invalid pickup and delivery actions masked
-\end{itemize}
-
-Worked temporarily:
-
-\begin{figure}[h!]
-  \vskip 0.2in
-  \begin{center}
-    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_working.png}}
-    \caption{
-      Historical locations and number of accepted papers for International
-      Machine Learning Conferences (ICML 1993 -- ICML 2008) and International
-      Workshops on Machine Learning (ML 1988 -- ML 1992). At the time this
-      figure was produced, the number of accepted papers for ICML 2008 was
-      unknown and instead estimated.
-    }
-    \label{fig:deep-q}
-  \end{center}
-\end{figure}
-
-Training became unstable again using the same setup:
-
-\begin{figure}[h!]
-  \vskip 0.2in
-  \begin{center}
-    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards.png}}
-    \caption{
-      Historical locations and number of accepted papers for International
-      Machine Learning Conferences (ICML 1993 -- ICML 2008) and International
-      Workshops on Machine Learning (ML 1988 -- ML 1992). At the time this
-      figure was produced, the number of accepted papers for ICML 2008 was
-      unknown and instead estimated.
-    }
-    \label{fig:deep-q}
-  \end{center}
-\end{figure}
-
-Observations:
-\begin{itemize}
-    \item successful delivery never occurred
-    \item rewards dropped again during training
-\end{itemize}
-
-Changed hyperparameters:
-
-\begin{table}[]
+\begin{table}[h!]
+\centering
 \begin{tabular}{|l|l|l|}
 \hline
-                  & First Training                          & Second Training                         \\ \hline
-GAMMA             & 0.99                                    & 0.99                                    \\ \hline
-Learning Rate     & 0.001, exp annealed to 0.0001 & 0.001, exp annealed to 0.0001 \\ \hline
-EPS\_START        & 0.9                                     & 0.9                                     \\ \hline
-EPS\_END          & 0.001                                   & 0.001                                   \\ \hline
-EPS\_DECAY        & 1000                                    & 10000                                   \\ \hline
-TAU               & 0.005                                   & 0.005                                   \\ \hline
-SOFT\_UPDATE      & 0.01                                    & 0.001                                   \\ \hline
-NUM\_TRAJECTORIES & 10000                                   & 10000                                   \\ \hline
-MAX\_EPS\_LENGTH  & 500                                     & 100                                     \\ \hline
-WARMUP            & 1500                                    & 3000                                    \\ \hline
-BATCH\_SIZE       & 128                                     & 128                                     \\ \hline
+                      & \textbf{Run 1}                  & \textbf{Run 2}                  \\ \hline
+GAMMA                 & 0.99                            & 0.95                            \\ \hline
+LR         &  & $3\times10^{-4}$, milestones [6000, 8000], $\gamma=0.5$ \\ \hline
+EPS\_START            & 0.9                             & 0.9                             \\ \hline
+EPS\_END              & 0.01                           & 0.01                           \\ \hline
+EPS\_DECAY            & 1000                            & 200000                           \\ \hline
+TAU                   & 0.005                           & 0.005                           \\ \hline
+SOFT\_UPDATE          & 0.01                            & 0.001                           \\ \hline
+NUM\_TRAJECTORIES     & 10000                           & 10000                           \\ \hline
+MAX\_EPISODE\_LENGTH  & 500                             & 100                             \\ \hline
+WARMUP                & 1500                            & 10000                            \\
+\hline
+Replay Buffer           & 10000                             & 20000                             \\ \hline
+BATCH\_SIZE           & 128                             & 128                             \\ \hline
 \end{tabular}
+\caption{Hyperparameters across DQN training runs.}
+\label{tab:dqn-params}
 \end{table}
 
-Results remained unstable. With new params result are even worse.
+\begin{figure}[h!]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_delivered_2.png}}
+    \caption{DQN training run 1 — cumulative reward and deliveries per episode.}
+    \label{fig:dqn-run1}
+  \end{center}
+\end{figure}
 
-\subsection{Hyperparameters}
-% Table: learning rate, discount factor, exploration schedule, episodes, and DQN-specific params.
-
+\begin{figure}[h!]
+  \vskip 0.2in
+  \begin{center}
+    \centerline{\includegraphics[width=\columnwidth]{report/figures/warehouse_rewards_delivered.png}}
+    \caption{DQN training run 2 — cumulative reward and deliveries per episode.}
+    \label{fig:dqn-run2}
+  \end{center}
+\end{figure}
 
 \section{Experiments}
 
