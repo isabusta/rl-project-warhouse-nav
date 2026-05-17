@@ -126,36 +126,67 @@
   \end{table}
 \end{frame}
 
-% --- Slide 5 (~90 s) ---
-\begin{frame}{Deep Q Learning Results}
-  % Two panels: learning curve + robustness table.
+% --- Slide 5 (~60 s) ---
+\begin{frame}{Deep Q-Learning}
   \begin{columns}
-    \column{0.55\textwidth}
-      % \includegraphics[width=\textwidth]{figures/learning_curve.png}
-      [FIGURE: reward vs.\ episode]
-    \column{0.45\textwidth}
-      \begin{table}
-        \centering
-        \small
-        \begin{tabular}{lc}
-          \toprule
-          Condition & Success \\
-          \midrule
-          Baseline      & \\
-          Slip $p=0.1$  & \\
-          Slip $p=0.2$  & \\
-          Unseen map    & \\
-          \bottomrule
-        \end{tabular}
-      \end{table}
+
+    \column{0.52\textwidth}
+
       \begin{itemize}
-        \item % key finding 1
-        \item % key finding 2
+        \item DQN applied to warehouse MDP
+        \item Initial training produced only negative rewards
       \end{itemize}
+
+      \vspace{0.3cm}
+
+      \textbf{Tried Improvements}
+      \begin{itemize}
+        \item Changed state encoding
+          \begin{itemize}
+            \item Grid-based state representation
+            \item Channels: obstacles, packages, storage, robot, carrying
+          \end{itemize}
+
+        \item Implemented action masking
+
+        \item Tuned network hyperparameters
+          \begin{itemize}
+            \item Slow $\varepsilon$-decay
+            \item Learning-rate scheduling
+          \end{itemize}
+      \end{itemize}
+
+    \column{0.48\textwidth}
+
+      \textbf{Main Challenges}
+      \begin{itemize}
+        \item Agent did not reliably learn
+              when pickup / delivery actions are beneficial
+
+        \item Some runs achieved deliveries
+
+        \item Other runs converged to
+              negative rewards only
+      \end{itemize}
+
   \end{columns}
 \end{frame}
 
-% --- Slide 6 (~60 s) ---
+% --- Slide 6 (~30 s) ---
+\begin{frame}{Deep Q-Learning Results}
+  \begin{columns}
+    \column{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{report/figures/warehouse_rewards_delivered.png}
+      \end{center}
+    \column{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{report/figures/warehouse_rewards_delivered_2.png}
+      \end{center}
+  \end{columns}
+\end{frame}
+
+% --- Slide 7 (~60 s) ---
 \begin{frame}{Robustness}
   % What perturbations were tested? What held up and what broke?
   \begin{itemize}
